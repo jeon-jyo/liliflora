@@ -1,5 +1,6 @@
 package com.liliflora.entity;
 
+import com.liliflora.entity.User.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,8 +19,8 @@ public class Wishlist {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long wishlistId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false, name = "user_id")
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "user_id")
     private User userId;
 
 }

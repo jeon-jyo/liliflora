@@ -1,5 +1,6 @@
 package com.liliflora.entity;
 
+import com.liliflora.entity.User.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,8 +21,8 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long orderId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false, name = "user_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "user_id")
     private User userId;
 
     @Column(nullable = false)

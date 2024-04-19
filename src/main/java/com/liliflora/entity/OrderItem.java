@@ -18,12 +18,12 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long orderItemId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false, name = "order_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "order_id")
     private Order orderId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false, name = "product_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "product_id")
     private Product productId;
 
     @Column(nullable = false)

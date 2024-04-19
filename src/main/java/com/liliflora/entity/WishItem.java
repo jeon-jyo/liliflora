@@ -18,12 +18,12 @@ public class WishItem {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long wishItemId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false, name = "wishlist_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "wishlist_id")
     private Wishlist wishlistId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false, name = "product_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "product_id")
     private Product productId;
 
     @Column(nullable = false)
