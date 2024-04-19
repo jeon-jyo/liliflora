@@ -32,31 +32,16 @@ public class UserController {
         return ResponseDto.of(HttpStatus.BAD_REQUEST);
     }
 
-    /*
-    "members/sign-in"  ➡︎ 모든 사용자에게 허용
-
-    "members/test"  ➡︎ USER 권한을 가진 사용자에게 허용
-
-    이제 테스트를 위하여 다음 과정을 거칠 것이다.
-
-    Postman으로 이전에 DB에 저장했던 회원 정보(username, password)를 body에 담아서 "members/sign-in"으로 요청
-    성공적으로 Access Token 발급
-    발급받은 Access Token을 header에 넣어 "members/test"로 요청
-     */
-
     @PostMapping("/sign-in")
     public JwtToken signIn(@RequestBody UserRequestDto.signin signInDto) {
-        System.out.println("signInsignInsignInsignIn");
         log.info("UserController.signIn()");
 
         String username = signInDto.getEmail();
         String password = signInDto.getPassword();
-        System.out.println("아아");
         JwtToken jwtToken = userService.signIn(username, password);
-        System.out.println("마마");
         log.info("request username = {}, password = {}", username, password);
         log.info("jwtToken accessToken = {}, refreshToken = {}", jwtToken.getAccessToken(), jwtToken.getRefreshToken());
-        return jwtToken;
+        return jwtToken;    // Access Token 발급
     }
 
     @PostMapping("/test")

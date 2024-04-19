@@ -27,7 +27,7 @@ public class User implements UserDetails {
 
     @Id
     @Column(name = "user_id")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long userId;
 
     @Column(nullable = false, unique = true)
@@ -69,7 +69,7 @@ public class User implements UserDetails {
     멤버가 가지고 있는 권한(authority) 목록을 SimpleGrantedAuthority로 변환하여 반환
     나머지 Override 메서드들 전부 true로 반환하도록 설정
     */
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
     @Override
