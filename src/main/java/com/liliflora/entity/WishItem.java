@@ -21,11 +21,11 @@ public class WishItem {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "wishlist_id")
-    private Wishlist wishlistId;
+    private Wishlist wishlist;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "product_id")
-    private Product productId;
+    private Product product;
 
     @Column(nullable = false)
     private int quantity;

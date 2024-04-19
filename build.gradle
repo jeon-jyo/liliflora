@@ -38,6 +38,11 @@ dependencies {
 
 	implementation 'org.slf4j:slf4j-api'	// slf4j 관련 패키지 의존성
 	implementation 'ch.qos.logback:logback-classic'	// 디버깅시에 로그를 찍어보는 의존성 (선택)
+
+	// Spring Security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// security tag 사용
+	implementation 'org.springframework.security:spring-security-taglibs'
 }
 
 tasks.named('test') {
