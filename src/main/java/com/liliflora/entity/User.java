@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -49,5 +48,12 @@ public class User {
 
     @Column(nullable = false)
     private char status;
+
+    // Entity 가 DB에 Insert 되기 전에 호출됨
+    @PrePersist
+    public void prePersist() {
+        this.regDate = LocalDate.now();
+        this.changedDate = LocalDate.now();
+    }
 
 }
