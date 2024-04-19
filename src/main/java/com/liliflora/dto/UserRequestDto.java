@@ -4,6 +4,9 @@ import com.liliflora.entity.User;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 public class UserRequestDto {
 
@@ -41,4 +44,14 @@ public class UserRequestDto {
         }
 
     }
+
+    @Getter
+    @Setter
+    @ToString
+    @NoArgsConstructor
+    public static class signin {
+        private String email;
+        private String password;
+    }
+
 }
