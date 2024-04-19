@@ -1,21 +1,23 @@
 package com.liliflora.entity;
 
-import com.liliflora.entity.User.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Getter
-@Table
+@Table(name = "orders")
 public class Order {
+
     @Id
     @Column(name = "order_id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -28,13 +30,15 @@ public class Order {
     @Column(nullable = false)
     private int amount;
 
+    @CreatedDate
     @Column(nullable = false, name = "purchase_date")
-    private Date purchaseDate;
+    private LocalDate purchaseDate;
 
-    @Column
-    private Date update;
+    @LastModifiedDate
+    @Column(name = "changed_date")
+    private LocalDate changedDate;
 
     @Column(nullable = false)
-    private String status;
+    private char status;
 
 }

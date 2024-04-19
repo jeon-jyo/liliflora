@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table
 public class WishItem {
+
     @Id
     @Column(name = "wish_item_id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

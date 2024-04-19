@@ -1,6 +1,5 @@
 package com.liliflora.entity;
 
-import com.liliflora.entity.User.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table
 public class Wishlist {
+
     @Id
     @Column(name = "wishlist_id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
