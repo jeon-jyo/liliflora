@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 @Table
 public class Product {
     @Id
-    @Column(name = "product_no")
+    @Column(name = "product_id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long productNo;
+    private long productId;
 
     @Column(nullable = false)
     private String name;
@@ -24,16 +24,13 @@ public class Product {
     @Column(nullable = false)
     private int price;
 
-    @Column
-    private String image;
-
     @Column(nullable = false)
     private int quantity;
 
     @Column(nullable = false)
     private String category;
 
-    @Column(nullable = false)
-    private String status;
+    @Column
+    private String description;
 
 }

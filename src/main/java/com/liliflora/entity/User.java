@@ -16,9 +16,9 @@ import java.util.Date;
 @Table
 public class User {
     @Id
-    @Column(name = "user_no")
+    @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long userNo;
+    private long userId;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -42,6 +42,6 @@ public class User {
     private Date update;
 
     @Column(nullable = false)
-    private String status;
+    private char status;
 
 }

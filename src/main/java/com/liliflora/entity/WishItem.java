@@ -12,23 +12,19 @@ import lombok.NoArgsConstructor;
 @Builder
 @Getter
 @Table
-public class Detail {
+public class WishItem {
     @Id
-    @Column(name = "detail_no")
+    @Column(name = "wish_item_id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long detailNo;
+    private long wishItemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false, name = "product_no")
-    private Product productNo;
+    @Column(nullable = false, name = "wishlist_id")
+    private Wishlist wishlistId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "basket_no")
-    private Basket basketNo;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "order_no")
-    private Order orderNo;
+    @Column(nullable = false, name = "product_id")
+    private Product productId;
 
     @Column(nullable = false)
     private int quantity;

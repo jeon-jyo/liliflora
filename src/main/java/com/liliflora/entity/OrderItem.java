@@ -6,34 +6,27 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
-
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Getter
 @Table
-public class Order {
+public class OrderItem {
     @Id
-    @Column(name = "order_id")
+    @Column(name = "order_item_id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long orderId;
+    private long orderItemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false, name = "user_id")
-    private User userId;
+    @Column(nullable = false, name = "order_id")
+    private Order orderId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(nullable = false, name = "product_id")
+    private Product productId;
 
     @Column(nullable = false)
-    private int amount;
-
-    @Column(nullable = false, name = "purchase_date")
-    private Date purchaseDate;
-
-    @Column
-    private Date update;
-
-    @Column(nullable = false)
-    private String status;
+    private int quantity;
 
 }
