@@ -4,14 +4,11 @@ import com.liliflora.dto.ResponseDto;
 import com.liliflora.dto.UserRequestDto;
 import com.liliflora.jwt.JwtToken;
 import com.liliflora.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -22,9 +19,17 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseDto signup(@RequestBody @Validated UserRequestDto.signup requestDto) {   // @RequestBody 는 json 객체로 넘어오는 것을 받아준다
+    public ResponseDto signup(@RequestBody @Valid UserRequestDto.signup requestDto) {   // @RequestBody 는 json 객체로 넘어오는 것을 받아준다
         log.info("UserController.signup()");
         log.info("email = {}, password = {}, name = {}", requestDto.getEmail(), requestDto.getPassword(), requestDto.getName());
+
+//        try{
+//            userService.signup(requestDto);
+//            return ResponseDto.of(HttpStatus.OK);
+//        } catch (Exception exception) {
+//            exception.printStackTrace();
+//            return ResponseDto.of(HttpStatus.BAD_REQUEST);
+//        }
 
         if(userService.signup(requestDto).equals("Success")) {
             return ResponseDto.of(HttpStatus.Series.SUCCESSFUL);
@@ -39,6 +44,7 @@ public class UserController {
         String username = signInDto.getEmail();
         String password = signInDto.getPassword();
         JwtToken jwtToken = userService.signIn(username, password);
+
         log.info("request username = {}, password = {}", username, password);
         log.info("jwtToken accessToken = {}, refreshToken = {}", jwtToken.getAccessToken(), jwtToken.getRefreshToken());
         return jwtToken;    // Access Token 발급
