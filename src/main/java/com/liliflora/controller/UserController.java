@@ -3,6 +3,7 @@ package com.liliflora.controller;
 import com.liliflora.dto.ResponseDto;
 import com.liliflora.dto.UserRequestDto;
 import com.liliflora.jwt.JwtToken;
+import com.liliflora.service.MailSendService;
 import com.liliflora.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,10 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final MailSendService mailService;
 
     @PostMapping("/signup")
-    public ResponseDto signup(@RequestBody @Valid UserRequestDto.signup requestDto) {   // @RequestBody 는 json 객체로 넘어오는 것을 받아준다
+    public ResponseDto signup(@RequestBody @Valid UserRequestDto.Signup requestDto) {   // @RequestBody 는 json 객체로 넘어오는 것을 받아준다
         log.info("UserController.signup()");
         log.info("email = {}, password = {}, name = {}", requestDto.getEmail(), requestDto.getPassword(), requestDto.getName());
 
@@ -37,8 +39,20 @@ public class UserController {
         return ResponseDto.of(HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/sign-in")
-    public JwtToken signIn(@RequestBody UserRequestDto.signin signInDto) {
+    @PostMapping ("/mailSend")
+    public String mailSend(@RequestBody @Valid UserRequestDto.EmailRequest emailRequest) {
+        log.info("인증 이메일 : " + emailRequest.getEmail());
+        return mailService.joinEmail(emailRequest.getEmail());
+    }
+
+    @PostMapping ("/mailAuthCheck")
+    public String authCheck(@RequestBody @Valid UserRequestDto.EmailRequest requestDto) {
+        log.info("인증 번호 : " + requestDto.getAuthNumber());
+        return mailService.checkAuthNumber(requestDto);
+    }
+
+    @PostMapping("sign-in")
+    public JwtToken signIn(@RequestBody UserRequestDto.Signin signInDto) {
         log.info("UserController.signIn()");
 
         String username = signInDto.getEmail();
@@ -50,7 +64,7 @@ public class UserController {
         return jwtToken;    // Access Token 발급
     }
 
-    @PostMapping("/test")
+    @PostMapping("/member/test")
     public String test() {
         return "success";
     }

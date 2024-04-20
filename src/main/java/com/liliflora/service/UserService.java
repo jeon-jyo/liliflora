@@ -25,18 +25,11 @@ public class UserService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
-    // private final EncryptUtil encryptor;
 
     // 회원가입
-    public String signup(UserRequestDto.signup requestDto) {
-
+    public String signup(UserRequestDto.Signup requestDto) {
         // 비밀번호 해싱
         String hashedPassword = passwordEncoder.encode(requestDto.getPassword());
-
-//        String encryptedEmail = encryptor.encrypt(requestDto.getEmail());
-//        String encryptedName = encryptor.encrypt(requestDto.getName());
-//        String encryptedAddress = encryptor.encrypt(requestDto.getPhone());
-//        String encryptedAddress = encryptor.encrypt(requestDto.getAddress());
 
         User user = User.builder()
                 .email(requestDto.getEmail())
