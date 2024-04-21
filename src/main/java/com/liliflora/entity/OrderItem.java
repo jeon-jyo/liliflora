@@ -21,11 +21,11 @@ public class OrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "order_id")
-    private Order orderId;
+    private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "product_id")
-    private Product productId;
+    private Product product;
 
     @Column(nullable = false)
     private int quantity;

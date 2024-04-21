@@ -6,6 +6,7 @@ import com.liliflora.jwt.JwtToken;
 import com.liliflora.service.MailSendService;
 import com.liliflora.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,14 +23,14 @@ public class UserController {
 
     // 이메일 중복확인 및 인증번호 발송
     @PostMapping ("/mailSend")
-    public String mailSend(@RequestBody @Valid UserRequestDto.EmailRequest emailRequest) {
+    public String mailSend(@RequestBody @Valid UserRequestDto.EmailRequest emailRequestDto) {
         log.info("UserController.mailSend()");
-        log.info("인증 이메일 : " + emailRequest.getEmail());
+        log.info("인증 이메일 : " + emailRequestDto.getEmail());
 
-        String email = emailRequest.getEmail();
+        String email = emailRequestDto.getEmail();
         String result = "";
         if (!userService.emailCheck(email)) {
-            result = mailService.joinEmail(emailRequest.getEmail());
+            result = mailService.joinEmail(emailRequestDto.getEmail());
         } else {
             result = "이미 존재하는 이메일 입니다.";
         }
@@ -38,21 +39,21 @@ public class UserController {
 
     // 인증번호 검사
     @PostMapping ("/mailAuthCheck")
-    public String authCheck(@RequestBody @Valid UserRequestDto.EmailRequest requestDto) {
+    public String authCheck(@RequestBody @Valid UserRequestDto.EmailRequest emailRequestDto) {
         log.info("UserController.authCheck()");
-        log.info("인증 번호 : " + requestDto.getAuthNumber());
-        return mailService.checkAuthNumber(requestDto);
+        log.info("인증 번호 : " + emailRequestDto.getAuthNumber());
+        return mailService.checkAuthNumber(emailRequestDto);
     }
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseDto signup(@RequestBody @Valid UserRequestDto.Signup requestDto) {   // @RequestBody 는 json 객체로 넘어오는 것을 받아준다
+    public ResponseDto signup(@RequestBody @Valid UserRequestDto.Signup signupDto) {   // @RequestBody 는 json 객체로 넘어오는 것을 받아준다
         log.info("UserController.signup()");
-        log.info("email = {}, password = {}, name = {}", requestDto.getEmail(), requestDto.getPassword(), requestDto.getName());
+        log.info("email = {}, password = {}, name = {}", signupDto.getEmail(), signupDto.getPassword(), signupDto.getName());
 
-        String result = userService.signup(requestDto);
+        String result = userService.signup(signupDto);
         if (result.equals("Success")) {
-            return ResponseDto.of(HttpStatus.OK, "가입 성공");
+            return ResponseDto.of(HttpStatus.CREATED, "가입 성공");
         } else if (result.equals("Duplicate")) {
             return ResponseDto.of(HttpStatus.CONFLICT, "중복된 이메일 입니다.");
         } else {
@@ -61,21 +62,52 @@ public class UserController {
     }
 
     // 로그인
-    @PostMapping("signin")
-    public JwtToken signIn(@RequestBody UserRequestDto.Signin signInDto) {
-        log.info("UserController.signIn()");
+    @PostMapping("/signin")
+    public JwtToken signin(@RequestBody UserRequestDto.Signin signinDto) {
+        log.info("UserController.signin()");
 
-        String username = signInDto.getEmail();
-        String password = signInDto.getPassword();
+        String username = signinDto.getEmail();
+        String password = signinDto.getPassword();
         JwtToken jwtToken = userService.signin(username, password);
         log.info("request username = {}, password = {}", username, password);
         log.info("jwtToken accessToken = {}, refreshToken = {}", jwtToken.getAccessToken(), jwtToken.getRefreshToken());
         return jwtToken;    // Access Token 발급
     }
 
-    @PostMapping("/member/test")
-    public String test() {
-        return "success";
+    /*
+    Spring Security 의 인증된 사용자(principal) 정보는 Authentication 객체를 통해 접근됨
+    Authentication 객체에서 principal 을 추출하여 해당 필드에 직접 주입할 수 있음
+     */
+    // 마이페이지 - 내 정보 조회
+    @GetMapping("/myPage")
+    public UserRequestDto.MyPage myPage(@RequestBody UserRequestDto.MyPage myPageDto) {
+        log.info("UserController.myPage()");
+        UserRequestDto.MyPage dto = userService.myPage(myPageDto.getEmail());
+        return dto;
     }
 
+    // 폰 번호 업데이트
+    @PutMapping("/phone")
+    public boolean updatePhone(@RequestParam @NotBlank String phone, UserRequestDto.MyPage myPageDto) {
+        log.info("UserController.updatePhone()");
+        userService.updatePhone(phone, myPageDto.getEmail());
+        return true;
+    }
+
+    // 주소 업데이트
+    @PutMapping("/address")
+    public boolean updateAddress(@RequestParam @NotBlank String address, UserRequestDto.MyPage myPageDto) {
+        log.info("UserController.updateAddress()");
+        userService.updateAddress(address, myPageDto.getEmail());
+        return true;
+    }
+
+    // 비밀번호 업데이트
+    @PutMapping("/password")
+    public boolean updatePassword(@RequestBody @Valid UserRequestDto.ChangePhone changePhoneDto, UserRequestDto.MyPage myPageDto) {
+        log.info("UserController.updatePassword()");
+        userService.updatePassword(changePhoneDto, myPageDto.getEmail());
+        return true;
+    }
+    
 }

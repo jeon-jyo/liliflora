@@ -21,6 +21,6 @@ public class Wishlist {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "user_id")
-    private User userId;
+    private User user;
 
 }

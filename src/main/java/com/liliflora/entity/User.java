@@ -105,4 +105,15 @@ public class User implements UserDetails {
         return true;
     }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

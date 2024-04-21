@@ -68,16 +68,14 @@ public class MailSendService {
     public String checkAuthNumber(UserRequestDto.EmailRequest requestDto) {
         String email = requestDto.getEmail();
         String authNumber = requestDto.getAuthNumber();
-        String result = "";
+        String result = "인증번호가 만료되었거나 없습니다.";
 
         if(redisService.checkExistsValue(redisService.getValues(email))) {
             if(redisService.getValues(requestDto.getEmail()).equals(authNumber)) {
                 result = "인증 성공";
             } else {
-                result = "인증번호가 일치하지 않음";
+                result = "인증번호가 일치하지 않습니다.";
             }
-        } else {
-            result = "인증번호가 일치하지 않음";
         }
         return result;
     }
