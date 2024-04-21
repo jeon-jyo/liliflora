@@ -25,18 +25,12 @@ public class UserController {
         log.info("UserController.signup()");
         log.info("email = {}, password = {}, name = {}", requestDto.getEmail(), requestDto.getPassword(), requestDto.getName());
 
-//        try{
-//            userService.signup(requestDto);
-//            return ResponseDto.of(HttpStatus.OK);
-//        } catch (Exception exception) {
-//            exception.printStackTrace();
-//            return ResponseDto.of(HttpStatus.BAD_REQUEST);
-//        }
-
-        if(userService.signup(requestDto).equals("Success")) {
-            return ResponseDto.of(HttpStatus.Series.SUCCESSFUL);
+        String result = userService.signup(requestDto);
+        if (result.equals("Success")) {
+            return ResponseDto.of(HttpStatus.OK, "가입 성공");
+        } else {
+            return ResponseDto.of(HttpStatus.BAD_REQUEST, "중복된 이메일 입니다.");
         }
-        return ResponseDto.of(HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping ("/mailSend")

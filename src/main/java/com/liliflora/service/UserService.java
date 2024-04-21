@@ -8,6 +8,7 @@ import com.liliflora.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -39,8 +40,12 @@ public class UserService {
                 .address(requestDto.getAddress())
                 .build();
 
-        userRepository.save(user);  // extends 한 JpaRepository 에서 제공
-        return "Success";
+        try {
+            userRepository.save(user);
+            return "Success";
+        } catch (DataIntegrityViolationException e) {   // 중복된 이메일 주소로 회원가입 시도한 경우 예외 처리
+            return e.getMessage();
+        }
     }
 
     // 로그인

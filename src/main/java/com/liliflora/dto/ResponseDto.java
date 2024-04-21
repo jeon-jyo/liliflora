@@ -7,13 +7,24 @@ import org.springframework.http.HttpStatus;
 @Getter
 @Builder
 public class ResponseDto<D> {
-    private int resultCode;
-    // private String resultMsg;
+    private HttpStatus status;  // 응답의 상태
+    private String message; // 해당 상태에 대한 메시지
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private D data;
+    private D data; // 응답 데이터가 담기며, 필요에 따라 생략
 
-    public static<D> ResponseDto<D> of(D data) {
-        return new ResponseDto<>(HttpStatus.OK.value(), data);
+    public static<D> ResponseDto<D> of(HttpStatus status, String message) {
+        return ResponseDto.<D>builder()
+                .status(status)
+                .message(message)
+                .build();
+    }
+
+    public static<D> ResponseDto<D> of(HttpStatus status, String message, D data) {
+        return ResponseDto.<D>builder()
+                .status(status)
+                .message(message)
+                .data(data)
+                .build();
     }
 }
