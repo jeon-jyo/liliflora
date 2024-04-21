@@ -18,6 +18,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,6 +30,18 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final EncryptUtil encryptUtil;
+
+    // 이메일 중복확인
+    public boolean emailCheck(String email) {
+        String encryptedEmail = encryptUtil.encrypt(email);
+
+        /*
+        존재 여부를 표현하는 래퍼(wrapper) 클래스
+        null 을 반환하는 메서드의 반환 값을 대체하거나, NullPointerException 을 방지
+         */
+        Optional<User> findUser = userRepository.findByEmail(encryptedEmail);
+        return findUser.isPresent();
+    }
 
     // 회원가입
     public String signup(UserRequestDto.Signup requestDto) {

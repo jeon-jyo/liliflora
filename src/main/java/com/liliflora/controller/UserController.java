@@ -20,12 +20,20 @@ public class UserController {
     private final UserService userService;
     private final MailSendService mailService;
 
-    // 이메일 인증번호 발송
+    // 이메일 중복확인 및 인증번호 발송
     @PostMapping ("/mailSend")
     public String mailSend(@RequestBody @Valid UserRequestDto.EmailRequest emailRequest) {
         log.info("UserController.mailSend()");
         log.info("인증 이메일 : " + emailRequest.getEmail());
-        return mailService.joinEmail(emailRequest.getEmail());
+
+        String email = emailRequest.getEmail();
+        String result = "";
+        if (!userService.emailCheck(email)) {
+            result = mailService.joinEmail(emailRequest.getEmail());
+        } else {
+            result = "이미 존재하는 이메일 입니다.";
+        }
+        return result;
     }
 
     // 인증번호 검사
