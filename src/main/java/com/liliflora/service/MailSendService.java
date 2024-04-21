@@ -1,6 +1,7 @@
 package com.liliflora.service;
 
 import com.liliflora.dto.UserRequestDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -11,6 +12,7 @@ import javax.mail.internet.MimeMessage;
 import java.util.Random;
 
 // 인증 번호를 생성하고 이메일을 보내는 서비스를 수행
+@Slf4j
 @Service
 public class MailSendService {
     @Autowired
@@ -66,14 +68,18 @@ public class MailSendService {
     public String checkAuthNumber(UserRequestDto.EmailRequest requestDto) {
         String email = requestDto.getEmail();
         String authNumber = requestDto.getAuthNumber();
+        String result = "";
 
         if(redisService.checkExistsValue(redisService.getValues(email))) {
             if(redisService.getValues(requestDto.getEmail()).equals(authNumber)) {
-                return "인증 성공";
+                result = "인증 성공";
+            } else {
+                result = "인증번호가 일치하지 않음";
             }
-            return "인증번호가 일치하지 않습니다.";
+        } else {
+            result = "인증번호가 일치하지 않음";
         }
-        return "인증번호가 만료되었거나 없습니다.";
+        return result;
     }
 
 }
