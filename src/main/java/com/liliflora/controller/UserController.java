@@ -3,6 +3,7 @@ package com.liliflora.controller;
 import com.liliflora.dto.ResponseDto;
 import com.liliflora.dto.UserRequestDto;
 import com.liliflora.jwt.JwtToken;
+import com.liliflora.security.UserDetailsImpl;
 import com.liliflora.service.MailSendService;
 import com.liliflora.service.UserService;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -76,15 +78,30 @@ public class UserController {
 
     /*
     Spring Security 의 인증된 사용자(principal) 정보는 Authentication 객체를 통해 접근됨
-    Authentication 객체에서 principal 을 추출하여 해당 필드에 직접 주입할 수 있음
+    Authentication 객체에서 principal 을 추출하여 해당 필드에 직접 액세스할 수 있음
      */
     // 마이페이지 - 내 정보 조회
     @GetMapping("/myPage")
-    public UserRequestDto.MyPage myPage(@RequestBody UserRequestDto.MyPage myPageDto) {
+    public UserRequestDto.MyPage myPage(@AuthenticationPrincipal UserDetailsImpl userDetailsImpl) {
         log.info("UserController.myPage()");
-        UserRequestDto.MyPage dto = userService.myPage(myPageDto.getEmail());
-        return dto;
+        log.info(userDetailsImpl.getUsername());
+
+        if (userDetailsImpl != null) {
+            UserRequestDto.MyPage dto = userService.myPage(userDetailsImpl.getUser());
+            return dto;
+        } else {
+            // UserDetailsImpl이 널인 경우에 대한 처리
+            // 예를 들어 로그인 페이지로 리다이렉트하거나 에러 메시지를 반환할 수 있습니다.
+            throw new IllegalStateException("UserDetailsImpl is null");
+        }
     }
+
+//    @GetMapping("/myPage")
+//    public UserRequestDto.MyPage myPage(@RequestBody UserRequestDto.MyPage myPageDto) {
+//        log.info("UserController.myPage()");
+//        UserRequestDto.MyPage dto = userService.myPage(myPageDto.getEmail());
+//        return dto;
+//    }
 
     // 폰 번호 업데이트
     @PutMapping("/phone")

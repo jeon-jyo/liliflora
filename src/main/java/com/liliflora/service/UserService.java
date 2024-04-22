@@ -2,6 +2,7 @@ package com.liliflora.service;
 
 import com.liliflora.dto.UserRequestDto;
 import com.liliflora.entity.User;
+import com.liliflora.entity.UserRoleEnum;
 import com.liliflora.jwt.JwtToken;
 import com.liliflora.jwt.JwtTokenProvider;
 import com.liliflora.repository.UserRepository;
@@ -55,16 +56,13 @@ public class UserService {
         String encryptedPhone = encryptUtil.encrypt(signupDto.getPhone());
         String encryptedAddress = encryptUtil.encrypt(signupDto.getAddress());
 
-//        List<String> roles = new ArrayList<>();
-//        roles.add("USER");  // USER 권한 부여
-
         User user = User.builder()
                 .email(encryptedEmail)
                 .password(hashedPassword)
                 .name(encryptedName)
                 .phone(encryptedPhone)
                 .address(encryptedAddress)
-//                .roles(roles)
+                .role(UserRoleEnum.USER)
                 .build();
 
         try {
@@ -93,8 +91,8 @@ public class UserService {
         // ----- jwt -----
         // 1. username + password 를 기반으로 Authentication 객체 생성
         // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
-        // jwt 토큰의 username 을 암호화한 이메일로 설정
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(encryptedEmail, password);
+        // jwt 토큰의 username 을 암호화한 이메일로 설정 -> loadUserByUsername 에서 암호화하는 거로 변경
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
 
         // 2. 실제 검증. authenticate() 메서드를 통해 요청된 User 에 대한 검증 진행
         // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
@@ -107,23 +105,41 @@ public class UserService {
     }
 
     // 마이페이지 - 내 정보 조회
-    public UserRequestDto.MyPage myPage(String email) {
-        String encryptedEmail = encryptUtil.encrypt(email);
+    public UserRequestDto.MyPage myPage(User user) {
+        String encryptedEmail = encryptUtil.encrypt(user.getEmail());
 
-        User user = userRepository.findByEmail(encryptedEmail)
+        User findUser = userRepository.findByEmail(encryptedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        String name = encryptUtil.decrypt(user.getName());
-        String phone = encryptUtil.decrypt(user.getEmail());
-        String address = encryptUtil.decrypt(user.getPhone());
+        String name = encryptUtil.decrypt(findUser.getName());
+        String phone = encryptUtil.decrypt(findUser.getEmail());
+        String address = encryptUtil.decrypt(findUser.getPhone());
 
         return UserRequestDto.MyPage.builder()
-                .email(email)
+                .email(user.getEmail())
                 .name(name)
                 .phone(phone)
                 .address(address)
                 .build();
     }
+
+//    public UserRequestDto.MyPage myPage(String email) {
+//        String encryptedEmail = encryptUtil.encrypt(email);
+//
+//        User user = userRepository.findByEmail(encryptedEmail)
+//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//
+//        String name = encryptUtil.decrypt(user.getName());
+//        String phone = encryptUtil.decrypt(user.getEmail());
+//        String address = encryptUtil.decrypt(user.getPhone());
+//
+//        return UserRequestDto.MyPage.builder()
+//                .email(email)
+//                .name(name)
+//                .phone(phone)
+//                .address(address)
+//                .build();
+//    }
 
     // 폰 번호 업데이트
     @Transactional
