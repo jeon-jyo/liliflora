@@ -32,7 +32,7 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);    // 지정된 키 바이트 배열을 기반으로 새 SecretKey 인스턴스를 만듦
     }
 
-    // Member 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
+    // User 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
     public JwtToken generateToken(Authentication authentication) {
         // 권한 가져오기
         String authorities = authentication.getAuthorities().stream()
@@ -42,9 +42,9 @@ public class JwtTokenProvider {
         long now = (new Date()).getTime();
 
         // Access Token 생성
-        Date accessTokenExpiresIn = new Date(now + 86400000);
+        Date accessTokenExpiresIn = new Date(now + 86400000);   // 24시간
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(authentication.getName())   // UserDetailsImpl 에서 getUsername() 한 값
                 .claim("auth", authorities)
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)

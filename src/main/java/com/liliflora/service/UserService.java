@@ -75,11 +75,11 @@ public class UserService {
 
     // 로그인
     @Transactional
-    public JwtToken signin(String email, String password) {
+    public JwtToken signin(UserRequestDto.Signin signinDto) {
+        String email = signinDto.getEmail();
+        String password = signinDto.getPassword();
         String encryptedEmail = encryptUtil.encrypt(email);
 
-        // ----- 해싱 -----
-        // 데이터베이스에서 암호화된 이메일을 기반으로 사용자 검색
         User user = userRepository.findByEmail(encryptedEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
@@ -87,16 +87,20 @@ public class UserService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("Invalid password");
         }
-
-        // ----- jwt -----
+        
         // 1. username + password 를 기반으로 Authentication 객체 생성
         // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
-        // jwt 토큰의 username 을 암호화한 이메일로 설정 -> loadUserByUsername 에서 암호화하는 거로 변경
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
 
         // 2. 실제 검증. authenticate() 메서드를 통해 요청된 User 에 대한 검증 진행
+        // authenticationManagerBuilder 가 요청을 수행할 provider 를 찾음
         // authenticate 메서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드 실행
+        // UserDetailsImpl 을 담은 authentication
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+        log.info("request email = {}, password = {}", email, password);
+
+        // ----- 로그인 로직 무조건 필수 -----
 
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
@@ -105,85 +109,65 @@ public class UserService {
     }
 
     // 마이페이지 - 내 정보 조회
-    public UserRequestDto.MyPage myPage(User user) {
-        String encryptedEmail = encryptUtil.encrypt(user.getEmail());
+    public UserRequestDto.MyPage myPage(Long userId) {
+        log.info("UserService.myPage()");
 
-        User findUser = userRepository.findByEmail(encryptedEmail)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        String name = encryptUtil.decrypt(findUser.getName());
-        String phone = encryptUtil.decrypt(findUser.getEmail());
-        String address = encryptUtil.decrypt(findUser.getPhone());
+        String email = encryptUtil.decrypt(user.getEmail());
+        String name = encryptUtil.decrypt(user.getName());
+        String phone = encryptUtil.decrypt(user.getPhone());
+        String address = encryptUtil.decrypt(user.getAddress());
 
         return UserRequestDto.MyPage.builder()
-                .email(user.getEmail())
+                .email(email)
                 .name(name)
                 .phone(phone)
                 .address(address)
                 .build();
     }
 
-//    public UserRequestDto.MyPage myPage(String email) {
-//        String encryptedEmail = encryptUtil.encrypt(email);
-//
-//        User user = userRepository.findByEmail(encryptedEmail)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//        String name = encryptUtil.decrypt(user.getName());
-//        String phone = encryptUtil.decrypt(user.getEmail());
-//        String address = encryptUtil.decrypt(user.getPhone());
-//
-//        return UserRequestDto.MyPage.builder()
-//                .email(email)
-//                .name(name)
-//                .phone(phone)
-//                .address(address)
-//                .build();
-//    }
+    // 비밀번호 업데이트
+    @Transactional
+    public void updatePassword(UserRequestDto.ChangePhone changePhoneDto, Long userId) {
+        log.info("UserService.updatePassword()");
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // 비밀번호 해싱
+        // String hashedPassword = passwordEncoder.encode(changePhoneDto.getPassword());
+
+        // 제공된 비밀번호와 데이터베이스에 저장된 해시된 비밀번호를 비교
+        if (!passwordEncoder.matches(changePhoneDto.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Invalid password");
+        }
+
+        String encryptedNewPwd = encryptUtil.encrypt(changePhoneDto.getNewPassword());
+        user.setPassword(encryptedNewPwd);
+        userRepository.save(user);
+    }
 
     // 폰 번호 업데이트
     @Transactional
-    public void updatePhone(String phone, String email) {
-        String encryptedEmail = encryptUtil.encrypt(email);
-        String encryptedPhone = encryptUtil.encrypt(phone);
-
-        User user = userRepository.findByEmail(encryptedEmail)
+    public void updatePhone(String phone, Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        String encryptedPhone = encryptUtil.encrypt(phone);
         user.setPhone(encryptedPhone);
         userRepository.save(user);
     }
 
     // 주소 업데이트
     @Transactional
-    public void updateAddress(String address, String email) {
-        String encryptedEmail = encryptUtil.encrypt(email);
+    public void updateAddress(String address, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         String encryptedAddress = encryptUtil.encrypt(address);
-
-        User user = userRepository.findByEmail(encryptedEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
         user.setAddress(encryptedAddress);
-        userRepository.save(user);
-    }
-
-    // 비밀번호 업데이트
-    @Transactional
-    public void updatePassword(UserRequestDto.ChangePhone changePhoneDto, String email) {
-        String encryptedEmail = encryptUtil.encrypt(email);
-        String encryptedPwd = encryptUtil.encrypt(changePhoneDto.getPassword());
-        String encryptedNewPwd = encryptUtil.encrypt(changePhoneDto.getNewPassword());
-
-        User user = userRepository.findByEmail(encryptedEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        // 제공된 비밀번호와 데이터베이스에 저장된 해시된 비밀번호를 비교
-        if (!passwordEncoder.matches(encryptedPwd, user.getPassword())) {
-            throw new BadCredentialsException("Invalid password");
-        }
-
-        user.setPassword(encryptedNewPwd);
-        user.setPassword(encryptedNewPwd);
         userRepository.save(user);
     }
 

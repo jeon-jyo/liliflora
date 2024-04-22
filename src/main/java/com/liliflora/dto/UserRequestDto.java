@@ -26,15 +26,6 @@ public class UserRequestDto {
 
         @NotBlank(message = "주소는 필수 입력 값입니다.")
         private String address;
-
-        public User toEntity() {
-            return User.builder()
-                    .email(email)
-                    .password(password)
-                    .name(name)
-                    .phone(phone)
-                    .build();
-        }
     }
 
     @Getter

@@ -40,10 +40,9 @@ public class UserDetailsImpl implements UserDetails {
         return user.getPassword();
     }
 
-    // username 을 로그인 시 사용 할 email 로 변경해줌
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return Long.toString(user.getUserId()); // 토큰 발행시 pk 값으로 key 설정
     }
 
     @Override

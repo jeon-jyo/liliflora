@@ -19,11 +19,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
 
-    // HttpSecurity를 구성하여 보안 설정을 정의
+    // HttpSecurity 를 구성하여 보안 설정을 정의
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
-                // REST API이므로 basic auth 및 csrf 보안을 사용하지 않음 (Basic 인증 x)
+                // REST API 이므로 basic auth 및 csrf 보안을 사용하지 않음 (Basic 인증 x)
                 .httpBasic(custom-> custom.disable())
                 // CSRF(Cross-Site Request Forgery) 보안을 비활성화
                 .csrf(custom->custom.disable())
@@ -34,7 +34,7 @@ public class SecurityConfig {
                     http
                             .requestMatchers("/user/**").permitAll()
                             .requestMatchers("/test/**").permitAll()
-                            .anyRequest().authenticated();  // 이 밖에 모든 요청에 대해서 인증을 필요로 한다는 설정
+                            .anyRequest().authenticated();  // 이 밖에 모든 요청에 대해서 인증을 필요로 한다는 설정 - JWT 가 있어야 가능
                     // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
                 }).addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class).build();
     }
