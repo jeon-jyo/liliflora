@@ -32,8 +32,11 @@ public class SecurityConfig {
                 // 요청에 대한 인가 규칙 설정
                 .authorizeHttpRequests(http->{
                     http
-                            .requestMatchers("/user/**").permitAll()
-                            .requestMatchers("/test/**").permitAll()
+                            .requestMatchers("/user/mailSend").permitAll()
+                            .requestMatchers("/user/mailAuthCheck").permitAll()
+                            .requestMatchers("/user/signup").permitAll()
+                            .requestMatchers("/user/signin").permitAll()
+                            .requestMatchers("/test/**").hasRole("USER")
                             .anyRequest().authenticated();  // 이 밖에 모든 요청에 대해서 인증을 필요로 한다는 설정 - JWT 가 있어야 가능
                     // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
                 }).addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class).build();

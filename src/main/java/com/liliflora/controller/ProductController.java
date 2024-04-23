@@ -18,10 +18,19 @@ public class ProductController {
 
     private final ProductService productService;
 
+    // 상품 목록
     @GetMapping("/list")
-    public List<ProductResponseDto.ProductDto> productList(@AuthenticationPrincipal UserDetails userDetails) {
+    public List<ProductResponseDto.ProductDto> productList() {
         log.info("ProductController.productList()");
 
         return productService.productList();
+    }
+
+    // 상품 상세
+    @GetMapping("/{productId}")
+    public ProductResponseDto.ProductDto productDetail(@PathVariable Long productId) {
+        log.info("ProductController.productDetail()");
+
+        return productService.productDetail(productId);
     }
 }
