@@ -1,6 +1,5 @@
 package com.liliflora.dto;
 
-import com.liliflora.entity.User;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -50,16 +49,6 @@ public class UserRequestDto {
     public static class SigninDto {
         private String email;
         private String password;
-    }
-
-    @Getter
-    @Setter
-    @Builder
-    public static class MyPageDto {
-        private String email;
-        private String name;
-        private String phone;
-        private String address;
     }
 
     @Getter

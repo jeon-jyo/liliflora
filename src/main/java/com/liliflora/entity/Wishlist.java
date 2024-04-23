@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,5 +24,8 @@ public class Wishlist {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "user_id")
     private User user;
+
+    @OneToMany(mappedBy = "wishlist", fetch = FetchType.LAZY)
+    private List<WishItem> wishItems;
 
 }

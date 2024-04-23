@@ -1,11 +1,14 @@
 package com.liliflora.service;
 
 import com.liliflora.dto.UserRequestDto;
+import com.liliflora.dto.UserResponseDto;
 import com.liliflora.entity.User;
 import com.liliflora.entity.UserRoleEnum;
+import com.liliflora.entity.Wishlist;
 import com.liliflora.jwt.JwtToken;
 import com.liliflora.jwt.JwtTokenProvider;
 import com.liliflora.repository.UserRepository;
+import com.liliflora.repository.WishlistRepository;
 import com.liliflora.util.EncryptUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final WishlistRepository wishlistRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
@@ -50,7 +54,7 @@ public class UserService {
         // 비밀번호 해싱
         String hashedPassword = passwordEncoder.encode(signupDto.getPassword());
 
-        // 이름, 이메일, 전화번호, 주소 암호화
+        // 이메일, 이름, 전화번호, 주소 암호화
         String encryptedEmail = encryptUtil.encrypt(signupDto.getEmail());
         String encryptedName = encryptUtil.encrypt(signupDto.getName());
         String encryptedPhone = encryptUtil.encrypt(signupDto.getPhone());
@@ -67,6 +71,21 @@ public class UserService {
 
         try {
             userRepository.save(user);
+
+            // Wishlist 생성 및 연결
+            Wishlist wishlist = Wishlist.builder()
+                    .user(user)
+                    .build();
+            wishlistRepository.save(wishlist);
+
+            // MakeWishlistDto 를 사용하여 Wishlist 엔티티 생성 및 저장
+//            WishlistRequestDto.MakeWishlistDto makeWishlistDto = WishlistRequestDto.MakeWishlistDto.builder()
+//                    .user(user)
+//                    .build();
+//
+//            Wishlist wishlist = makeWishlistDto.toEntity(makeWishlistDto);
+//            wishlistRepository.save(wishlist);
+
             return "Success";
         } catch (DataIntegrityViolationException e) {   // 중복된 이메일 주소로 회원가입 시도한 경우 예외 처리
             return "Duplicate";
@@ -108,8 +127,7 @@ public class UserService {
         return jwtToken;
     }
 
-    // 마이페이지 - 내 정보 조회
-    public UserRequestDto.MyPageDto myPage(Long userId) {
+    public UserResponseDto.MyPageDto myPage(Long userId) {
         log.info("UserService.myPage()");
 
         User user = userRepository.findById(userId)
@@ -120,7 +138,7 @@ public class UserService {
         String phone = encryptUtil.decrypt(user.getPhone());
         String address = encryptUtil.decrypt(user.getAddress());
 
-        return UserRequestDto.MyPageDto.builder()
+        return UserResponseDto.MyPageDto.builder()
                 .email(email)
                 .name(name)
                 .phone(phone)

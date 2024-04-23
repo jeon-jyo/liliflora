@@ -2,6 +2,7 @@ package com.liliflora.controller;
 
 import com.liliflora.dto.ResponseDto;
 import com.liliflora.dto.UserRequestDto;
+import com.liliflora.dto.UserResponseDto;
 import com.liliflora.jwt.JwtToken;
 import com.liliflora.service.MailSendService;
 import com.liliflora.service.UserService;
@@ -79,7 +80,7 @@ public class UserController {
      */
     // 마이페이지 - 내 정보 조회
     @GetMapping("/myPage")
-    public UserRequestDto.MyPageDto myPage(@AuthenticationPrincipal UserDetails userDetails) {
+    public UserResponseDto.MyPageDto myPage(@AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.myPage()");
         if (userDetails != null) {
             return userService.myPage(Long.valueOf(userDetails.getUsername()));
