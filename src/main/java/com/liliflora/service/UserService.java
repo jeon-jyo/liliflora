@@ -21,9 +21,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -46,7 +46,7 @@ public class UserService {
 
     // 회원가입
     @Transactional
-    public String signup(UserRequestDto.Signup signupDto) {
+    public String signup(UserRequestDto.SignupDto signupDto) {
         // 비밀번호 해싱
         String hashedPassword = passwordEncoder.encode(signupDto.getPassword());
 
@@ -75,7 +75,7 @@ public class UserService {
 
     // 로그인
     @Transactional
-    public JwtToken signin(UserRequestDto.Signin signinDto) {
+    public JwtToken signin(UserRequestDto.SigninDto signinDto) {
         String email = signinDto.getEmail();
         String password = signinDto.getPassword();
         String encryptedEmail = encryptUtil.encrypt(email);
@@ -109,7 +109,7 @@ public class UserService {
     }
 
     // 마이페이지 - 내 정보 조회
-    public UserRequestDto.MyPage myPage(Long userId) {
+    public UserRequestDto.MyPageDto myPage(Long userId) {
         log.info("UserService.myPage()");
 
         User user = userRepository.findById(userId)
@@ -120,7 +120,7 @@ public class UserService {
         String phone = encryptUtil.decrypt(user.getPhone());
         String address = encryptUtil.decrypt(user.getAddress());
 
-        return UserRequestDto.MyPage.builder()
+        return UserRequestDto.MyPageDto.builder()
                 .email(email)
                 .name(name)
                 .phone(phone)
@@ -130,7 +130,7 @@ public class UserService {
 
     // 비밀번호 업데이트
     @Transactional
-    public void updatePassword(UserRequestDto.ChangePhone changePhoneDto, Long userId) {
+    public void updatePassword(UserRequestDto.ChangePhoneDto changePhoneDto, Long userId) {
         log.info("UserService.updatePassword()");
 
         User user = userRepository.findById(userId)
@@ -144,7 +144,7 @@ public class UserService {
             throw new BadCredentialsException("Invalid password");
         }
 
-        String encryptedNewPwd = encryptUtil.encrypt(changePhoneDto.getNewPassword());
+        String encryptedNewPwd = passwordEncoder.encode(changePhoneDto.getNewPassword());
         user.setPassword(encryptedNewPwd);
         userRepository.save(user);
     }

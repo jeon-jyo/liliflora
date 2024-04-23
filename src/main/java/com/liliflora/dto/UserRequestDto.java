@@ -8,7 +8,7 @@ public class UserRequestDto {
 
     // 회원가입시에 필요한 attribute 만
     @Getter
-    public static class Signup {
+    public static class SignupDto {
 
         @NotBlank(message = "이메일은 필수 입력 값입니다.")
         @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,6}$", message = "이메일 형식이 올바르지 않습니다.")
@@ -30,7 +30,7 @@ public class UserRequestDto {
 
     @Getter
     @Setter
-    public static class EmailRequest {
+    public static class EmailRequestDto {
         /*
         1) @기호를 포함해야 한다.
         2 _@기호를 기준으로 이메일 주소를 이루는 로컬호스트와 도메인 파트가 존재해야 한다.
@@ -47,7 +47,7 @@ public class UserRequestDto {
     @Setter
     @ToString
     @NoArgsConstructor
-    public static class Signin {
+    public static class SigninDto {
         private String email;
         private String password;
     }
@@ -55,7 +55,7 @@ public class UserRequestDto {
     @Getter
     @Setter
     @Builder
-    public static class MyPage {
+    public static class MyPageDto {
         private String email;
         private String name;
         private String phone;
@@ -65,7 +65,7 @@ public class UserRequestDto {
     @Getter
     @Setter
     @Builder
-    public static class ChangePhone {
+    public static class ChangePhoneDto {
         @NotBlank(message = "비밀번호는 필수 입력 값입니다.")
         @Pattern(regexp = "(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,16}", message = "비밀번호는 8~16자 영문 대 소문자, 숫자, 특수문자입니다.")
         private String password;

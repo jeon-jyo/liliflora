@@ -25,7 +25,7 @@ public class UserController {
 
     // 이메일 중복확인 및 인증번호 발송
     @PostMapping ("/mailSend")
-    public String mailSend(@RequestBody @Valid UserRequestDto.EmailRequest emailRequestDto) {
+    public String mailSend(@RequestBody @Valid UserRequestDto.EmailRequestDto emailRequestDto) {
         log.info("UserController.mailSend()");
 
         String email = emailRequestDto.getEmail();
@@ -38,7 +38,7 @@ public class UserController {
 
     // 인증번호 검사
     @PostMapping ("/mailAuthCheck")
-    public String authCheck(@RequestBody @Valid UserRequestDto.EmailRequest emailRequestDto) {
+    public String authCheck(@RequestBody @Valid UserRequestDto.EmailRequestDto emailRequestDto) {
         log.info("UserController.authCheck()");
 
         return mailService.checkAuthNumber(emailRequestDto);
@@ -46,7 +46,7 @@ public class UserController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseDto signup(@RequestBody @Valid UserRequestDto.Signup signupDto) {   // @RequestBody 는 json 객체로 넘어오는 것을 받아준다
+    public ResponseDto<Object> signup(@RequestBody @Valid UserRequestDto.SignupDto signupDto) {   // @RequestBody 는 json 객체로 넘어오는 것을 받아준다
         log.info("UserController.signup()");
 
         String result = userService.signup(signupDto);
@@ -61,7 +61,7 @@ public class UserController {
 
     // 로그인
     @PostMapping("/signin")
-    public JwtToken signin(@RequestBody UserRequestDto.Signin signinDto) {
+    public JwtToken signin(@RequestBody UserRequestDto.SigninDto signinDto) {
         log.info("UserController.signin()");
 
         JwtToken jwtToken = userService.signin(signinDto);
@@ -79,7 +79,7 @@ public class UserController {
      */
     // 마이페이지 - 내 정보 조회
     @GetMapping("/myPage")
-    public UserRequestDto.MyPage myPage(@AuthenticationPrincipal UserDetails userDetails) {
+    public UserRequestDto.MyPageDto myPage(@AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.myPage()");
         if (userDetails != null) {
             return userService.myPage(Long.valueOf(userDetails.getUsername()));
@@ -90,7 +90,7 @@ public class UserController {
 
     // 비밀번호 업데이트
     @PutMapping("/password")
-    public boolean updatePassword(@RequestBody @Valid UserRequestDto.ChangePhone changePhoneDto,
+    public boolean updatePassword(@RequestBody @Valid UserRequestDto.ChangePhoneDto changePhoneDto,
                                   @AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.updatePassword()");
         userService.updatePassword(changePhoneDto, Long.valueOf(userDetails.getUsername()));
