@@ -18,7 +18,7 @@ public class ProductController {
 
     // 상품 목록
     @GetMapping("/list")
-    public List<ProductResponseDto.ProductDto> productList() {
+    public List<ProductResponseDto.ProductDetailDto> productList() {
         log.info("ProductController.productList()");
 
         return productService.productList();
@@ -26,7 +26,7 @@ public class ProductController {
 
     // 상품 상세
     @GetMapping("/{productId}")
-    public ProductResponseDto.ProductDto productDetail(@PathVariable Long productId) {
+    public ProductResponseDto.ProductDetailDto productDetail(@PathVariable Long productId) {
         log.info("ProductController.productDetail()");
 
         return productService.productDetail(productId);

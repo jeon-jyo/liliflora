@@ -65,7 +65,7 @@ public class MailSendService {
         }
     }
 
-    public String checkAuthNumber(UserRequestDto.EmailRequestDto requestDto) {
+    public String checkAuthNumber(UserRequestDto.EmailCheckDto requestDto) {
         String email = requestDto.getEmail();
         String authNumber = requestDto.getAuthNumber();
         String result = "인증번호가 만료되었거나 없습니다.";

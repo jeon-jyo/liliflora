@@ -26,7 +26,7 @@ public class UserController {
 
     // 이메일 중복확인 및 인증번호 발송
     @PostMapping ("/mailSend")
-    public String mailSend(@RequestBody @Valid UserRequestDto.EmailRequestDto emailRequestDto) {
+    public String mailSend(@RequestBody @Valid UserRequestDto.EmailCheckDto emailRequestDto) {
         log.info("UserController.mailSend()");
 
         String email = emailRequestDto.getEmail();
@@ -39,7 +39,7 @@ public class UserController {
 
     // 인증번호 검사
     @PostMapping ("/mailAuthCheck")
-    public String authCheck(@RequestBody @Valid UserRequestDto.EmailRequestDto emailRequestDto) {
+    public String authCheck(@RequestBody @Valid UserRequestDto.EmailCheckDto emailRequestDto) {
         log.info("UserController.authCheck()");
 
         return mailService.checkAuthNumber(emailRequestDto);

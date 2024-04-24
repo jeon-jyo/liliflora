@@ -20,17 +20,17 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     // 상품 목록
-    public List<ProductResponseDto.ProductDto> productList() {
+    public List<ProductResponseDto.ProductDetailDto> productList() {
         return productRepository.findAllByOrderByProductIdDesc().stream()
-                .map(ProductResponseDto.ProductDto::fromEntity)
+                .map(ProductResponseDto.ProductDetailDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     // 상품 상세
-    public ProductResponseDto.ProductDto productDetail(Long productId) {
+    public ProductResponseDto.ProductDetailDto productDetail(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException("Product not found"));
 
-        return ProductResponseDto.ProductDto.fromEntity(product);
+        return ProductResponseDto.ProductDetailDto.fromEntity(product);
     }
 }

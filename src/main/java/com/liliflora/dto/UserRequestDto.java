@@ -29,7 +29,7 @@ public class UserRequestDto {
 
     @Getter
     @Setter
-    public static class EmailRequestDto {
+    public static class EmailCheckDto {
         /*
         1) @기호를 포함해야 한다.
         2 _@기호를 기준으로 이메일 주소를 이루는 로컬호스트와 도메인 파트가 존재해야 한다.

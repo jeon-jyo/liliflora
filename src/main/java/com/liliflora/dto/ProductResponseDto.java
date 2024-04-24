@@ -11,7 +11,7 @@ public class ProductResponseDto {
     @Getter
     @Setter
     @Builder
-    public static class ProductDto {
+    public static class ProductDetailDto {
 
         private long productId;
 
@@ -29,14 +29,14 @@ public class ProductResponseDto {
 
         private String description;
 
-        public static ProductDto fromEntity(Product entity) {
-            return ProductDto.builder()
-                    .productId(entity.getProductId())
-                    .name(entity.getName())
-                    .price(entity.getPrice())
-                    .quantity(entity.getQuantity())
-                    .category(entity.getCategory())
-                    .description(entity.getDescription())
+        public static ProductDetailDto fromEntity(Product product) {
+            return ProductDetailDto.builder()
+                    .productId(product.getProductId())
+                    .name(product.getName())
+                    .price(product.getPrice())
+                    .quantity(product.getQuantity())
+                    .category(product.getCategory())
+                    .description(product.getDescription())
                     .build();
         }
     }

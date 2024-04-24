@@ -1,12 +1,92 @@
 package com.liliflora.service;
 
-import com.liliflora.dto.WishlistResponseDto;
+import com.liliflora.dto.WishItemRequestDto;
+import com.liliflora.dto.WishItemResponseDto;
+import com.liliflora.entity.Product;
+import com.liliflora.entity.User;
+import com.liliflora.entity.WishItem;
+import com.liliflora.entity.Wishlist;
+import com.liliflora.repository.ProductRepository;
+import com.liliflora.repository.WishItemRepository;
+import com.liliflora.repository.WishlistRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.acls.model.NotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
 public class WishlistService {
 
-    // 장바구니 추가
-    public WishlistResponseDto.AddWishlistDto addWishlist(WishlistResponseDto.AddWishlistDto addWishlistDto, Long userId) {
+    private final ProductRepository productRepository;
+    private final WishlistRepository wishlistRepository;
+    private final WishItemRepository wishItemRepository;
 
-        return null;
+    // 장바구니 상품 추가
+    @Transactional
+    public WishItemResponseDto.WishItemCheckDto addWishlist(WishItemRequestDto.addWishItemDto addWishlistDto, Long userId) {
+        log.info("WishlistService.addWishlist()");
+
+        User user = User.builder()
+                .userId(userId)
+                .build();
+
+        Wishlist wishlist = wishlistRepository.findByUser(user)
+                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId)
+                );
+
+        Product product = productRepository.findById(addWishlistDto.getProductId())
+                .orElseThrow(() -> new NotFoundException("Product not found " + addWishlistDto.getProductId())
+        );
+
+        log.info("userId " + userId);
+        log.info("wishlist " + wishlist.getWishlistId());
+        log.info("product " + product.getProductId());
+
+
+        WishItem wishItem = confirmWishItem(addWishlistDto, wishlist, product);
+
+        return WishItemResponseDto.WishItemCheckDto.fromEntity(wishItem);
     }
+
+    // 장바구니 상품 확인 - 추가 및 수정
+    private WishItem confirmWishItem(WishItemRequestDto.addWishItemDto addWishlistDto, Wishlist wishlist, Product product) {
+        Optional<WishItem> currentWishItem =
+                wishItemRepository.findWishItemByWishlistAndProductAndDeletedFalse(wishlist, product);
+
+        WishItem wishItem;
+        if (currentWishItem.isPresent()) {  // 장바구니에 해당 상품이 존재한다면 수량 업데이트
+            wishItem = currentWishItem.get();   // getOne()은 엔티티를 가져오는 동안 지연 로딩을 허용하기 때문에 사용자 식별자로 엔티티를 가져올 때 효율적
+            wishItem.increaseQuantity(addWishlistDto.getQuantity());
+        } else {    // 존재하지 않는다면 장바구니 추가
+            wishItem = WishItem.builder()
+                    .wishlist(wishlist)
+                    .product(product)
+                    .quantity(addWishlistDto.getQuantity())
+                    .build();
+        }
+        wishItemRepository.save(wishItem);
+        return wishItem;
+    }
+
+
+    // 장바구니 추가
+//    @Transactional
+//    public WishlistResponseDto.AddWishlistDto addWishlist(WishlistResponseDto.AddWishlistDto addWishlistDto, Long userId) {
+//        Product product = productRepository.findById(requestDto.productId()).orElseThrow(
+//                () -> new NotFoundException(ErrorMessage.NOT_FOUND_PRODUCT)
+//        );
+//
+//        Wishlist wishlist = wishlistRepository.findById(user.getWishListId()).orElseThrow(
+//                () -> new NotFoundException(ErrorMessage.NOT_FOUND_WISHLIST)
+//        );
+//
+//        WishlistProduct wishlistProduct = createWishlistProduct(requestDto, wishlist, product);
+//
+//        return WishlistResponseDto.of(wishlistProduct);
+//    }
 }

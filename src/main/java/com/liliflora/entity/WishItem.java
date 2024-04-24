@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Getter
-@Table
+@Table(name = "wish_item")
 public class WishItem {
 
     @Id
@@ -30,4 +30,15 @@ public class WishItem {
     @Column(nullable = false)
     private int quantity;
 
+    @Column(nullable = false)
+    private boolean deleted = Boolean.FALSE;
+
+
+    public void increaseQuantity(int quantity) {
+        this.quantity += quantity;
+    }
+
+    public void updateQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }
