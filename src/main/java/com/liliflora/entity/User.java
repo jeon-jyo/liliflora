@@ -65,15 +65,15 @@ public class User {
         this.changedDate = LocalDateTime.now();
     }
 
-    public void setPassword(String password) {
+    public void updatePassword(String password) {
         this.password = password;
     }
 
-    public void setPhone(String phone) {
+    public void updatePhone(String phone) {
         this.phone = phone;
     }
 
-    public void setAddress(String address) {
+    public void updateAddress(String address) {
         this.address = address;
     }
 }

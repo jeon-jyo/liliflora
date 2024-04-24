@@ -15,6 +15,7 @@ import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -73,20 +74,25 @@ public class WishlistService {
         return wishItem;
     }
 
+    // 장바구니 조회
+    public List<WishItemResponseDto.WishItemCheckDto> myWishlist(Long userId) {
+        log.info("WishlistService.myWishlist()");
 
-    // 장바구니 추가
-//    @Transactional
-//    public WishlistResponseDto.AddWishlistDto addWishlist(WishlistResponseDto.AddWishlistDto addWishlistDto, Long userId) {
-//        Product product = productRepository.findById(requestDto.productId()).orElseThrow(
-//                () -> new NotFoundException(ErrorMessage.NOT_FOUND_PRODUCT)
-//        );
-//
-//        Wishlist wishlist = wishlistRepository.findById(user.getWishListId()).orElseThrow(
-//                () -> new NotFoundException(ErrorMessage.NOT_FOUND_WISHLIST)
-//        );
-//
-//        WishlistProduct wishlistProduct = createWishlistProduct(requestDto, wishlist, product);
-//
-//        return WishlistResponseDto.of(wishlistProduct);
-//    }
+        User user = User.builder()
+                .userId(userId)
+                .build();
+
+        Wishlist wishlist = wishlistRepository.findByUser(user)
+                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
+
+        // List<WishItem> 가 자동으로 불러와짐
+        List<WishItem> wishItems = wishlist.getWishItems();
+
+        List<WishItem> currentWishItems = wishItems.stream()    // 리스트 -> 스트림
+                .filter(wishItem -> !wishItem.isDeleted())  // wishItem 객체에 대해 삭제되지 않은 경우만 필터
+                .toList();  // 리스트로 수집
+
+        // map() : 각 WishItem 객체를 새로운 요소(fromEntity)로 매핑
+        return currentWishItems.stream().map(WishItemResponseDto.WishItemCheckDto::fromEntity).toList();
+    }
 }

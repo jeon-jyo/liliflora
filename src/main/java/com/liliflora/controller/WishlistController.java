@@ -9,6 +9,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/wishlist")
@@ -24,6 +26,14 @@ public class WishlistController {
         log.info("WishlistController.addWishlist()");
 
         return wishlistService.addWishlist(addWishlistDto, Long.valueOf(userDetails.getUsername()));
+    }
+
+    // 장바구니 조회
+    @GetMapping("/my")
+    public List<WishItemResponseDto.WishItemCheckDto> myWishlist(@AuthenticationPrincipal UserDetails userDetails) {
+        log.info("WishlistController.myWishlist()");
+
+        return wishlistService.myWishlist(Long.valueOf(userDetails.getUsername()));
     }
 
 }

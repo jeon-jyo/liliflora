@@ -163,7 +163,7 @@ public class UserService {
         }
 
         String encryptedNewPwd = passwordEncoder.encode(changePhoneDto.getNewPassword());
-        user.setPassword(encryptedNewPwd);
+        user.updatePassword(encryptedNewPwd);
         userRepository.save(user);
     }
 
@@ -174,7 +174,7 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String encryptedPhone = encryptUtil.encrypt(phone);
-        user.setPhone(encryptedPhone);
+        user.updatePhone(encryptedPhone);
         userRepository.save(user);
     }
 
@@ -185,7 +185,7 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String encryptedAddress = encryptUtil.encrypt(address);
-        user.setAddress(encryptedAddress);
+        user.updateAddress(encryptedAddress);
         userRepository.save(user);
     }
 
