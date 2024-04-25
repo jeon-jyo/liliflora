@@ -21,7 +21,7 @@ public class WishlistController {
 
     // 장바구니 추가
     @PostMapping("/add")
-    public WishItemResponseDto.WishItemCheckDto addWishlist(@RequestBody WishItemRequestDto.addWishItemDto addWishlistDto,
+    public WishItemResponseDto.WishItemCheckDto addWishlist(@RequestBody WishItemRequestDto.AddWishItemDto addWishlistDto,
                                                              @AuthenticationPrincipal UserDetails userDetails) {
         log.info("WishlistController.addWishlist()");
 
@@ -34,6 +34,24 @@ public class WishlistController {
         log.info("WishlistController.myWishlist()");
 
         return wishlistService.myWishlist(Long.valueOf(userDetails.getUsername()));
+    }
+
+    // 장바구니 수량 변경
+    @PutMapping("/update")
+    public WishItemResponseDto.WishItemCheckDto updateWishlist(@RequestBody WishItemRequestDto.UpdateWishItemDto updateWishItemDto,
+                                                               @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("WishlistController.updateWishlist()");
+
+        return wishlistService.updateWishlist(updateWishItemDto, Long.valueOf(userDetails.getUsername()));
+    }
+
+    // 장바구니 삭제
+    @PutMapping("/delete")
+    public WishItemResponseDto.WishItemCheckDto deleteWishlist(@RequestBody WishItemRequestDto.UpdateWishItemDto updateWishItemDto,
+                                                               @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("WishlistController.deleteWishlist()");
+
+        return wishlistService.deleteWishlist(updateWishItemDto, Long.valueOf(userDetails.getUsername()));
     }
 
 }

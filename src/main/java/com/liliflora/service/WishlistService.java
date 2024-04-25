@@ -29,7 +29,7 @@ public class WishlistService {
 
     // 장바구니 상품 추가
     @Transactional
-    public WishItemResponseDto.WishItemCheckDto addWishlist(WishItemRequestDto.addWishItemDto addWishlistDto, Long userId) {
+    public WishItemResponseDto.WishItemCheckDto addWishlist(WishItemRequestDto.AddWishItemDto addWishlistDto, Long userId) {
         log.info("WishlistService.addWishlist()");
 
         User user = User.builder()
@@ -44,18 +44,12 @@ public class WishlistService {
                 .orElseThrow(() -> new NotFoundException("Product not found " + addWishlistDto.getProductId())
         );
 
-        log.info("userId " + userId);
-        log.info("wishlist " + wishlist.getWishlistId());
-        log.info("product " + product.getProductId());
-
-
         WishItem wishItem = confirmWishItem(addWishlistDto, wishlist, product);
-
         return WishItemResponseDto.WishItemCheckDto.fromEntity(wishItem);
     }
 
     // 장바구니 상품 확인 - 추가 및 수정
-    private WishItem confirmWishItem(WishItemRequestDto.addWishItemDto addWishlistDto, Wishlist wishlist, Product product) {
+    private WishItem confirmWishItem(WishItemRequestDto.AddWishItemDto addWishlistDto, Wishlist wishlist, Product product) {
         Optional<WishItem> currentWishItem =
                 wishItemRepository.findWishItemByWishlistAndProductAndDeletedFalse(wishlist, product);
 
@@ -94,5 +88,30 @@ public class WishlistService {
 
         // map() : 각 WishItem 객체를 새로운 요소(fromEntity)로 매핑
         return currentWishItems.stream().map(WishItemResponseDto.WishItemCheckDto::fromEntity).toList();
+    }
+
+    // 장바구니 수량 변경
+    public WishItemResponseDto.WishItemCheckDto updateWishlist(WishItemRequestDto.UpdateWishItemDto updateWishItemDto, Long userId) {
+        log.info("WishlistService.updateWishlist()");
+
+        WishItem wishItem = wishItemRepository.findById(updateWishItemDto.getWishItemId())
+                .orElseThrow(() -> new NotFoundException("WishItem not found " + userId));
+
+
+        wishItem.updateQuantity(updateWishItemDto.getQuantity());
+        wishItemRepository.save(wishItem);
+        return WishItemResponseDto.WishItemCheckDto.fromEntity(wishItem);
+    }
+
+    // 장바구니 삭제
+    public WishItemResponseDto.WishItemCheckDto deleteWishlist(WishItemRequestDto.UpdateWishItemDto updateWishItemDto, Long userId) {
+        log.info("WishlistService.deleteWishlist()");
+
+        WishItem wishItem = wishItemRepository.findById(updateWishItemDto.getWishItemId())
+                .orElseThrow(() -> new NotFoundException("WishItem not found " + userId));
+
+        wishItem.updateDeleted();
+        wishItemRepository.save(wishItem);
+        return WishItemResponseDto.WishItemCheckDto.fromEntity(wishItem);
     }
 }

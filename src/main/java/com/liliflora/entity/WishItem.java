@@ -41,4 +41,8 @@ public class WishItem {
     public void updateQuantity(int quantity) {
         this.quantity = quantity;
     }
+
+    public void updateDeleted() {
+        this.deleted = true;
+    }
 }

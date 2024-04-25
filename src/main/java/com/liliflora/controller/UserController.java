@@ -39,8 +39,8 @@ public class UserController {
 
     // 인증번호 검사
     @PostMapping ("/mailAuthCheck")
-    public String authCheck(@RequestBody @Valid UserRequestDto.EmailCheckDto emailRequestDto) {
-        log.info("UserController.authCheck()");
+    public String mailAuthCheck(@RequestBody @Valid UserRequestDto.EmailCheckDto emailRequestDto) {
+        log.info("UserController.mailAuthCheck()");
 
         return mailService.checkAuthNumber(emailRequestDto);
     }
@@ -82,6 +82,7 @@ public class UserController {
     @GetMapping("/myPage")
     public UserResponseDto.MyPageDto myPage(@AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.myPage()");
+
         if (userDetails != null) {
             return userService.myPage(Long.valueOf(userDetails.getUsername()));
         } else {
@@ -94,6 +95,7 @@ public class UserController {
     public boolean updatePassword(@RequestBody @Valid UserRequestDto.ChangePhoneDto changePhoneDto,
                                   @AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.updatePassword()");
+
         userService.updatePassword(changePhoneDto, Long.valueOf(userDetails.getUsername()));
         return true;
     }
@@ -102,6 +104,7 @@ public class UserController {
     @PutMapping("/phone")
     public boolean updatePhone(@RequestParam @NotBlank String phone, @AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.updatePhone()");
+
         userService.updatePhone(phone, Long.valueOf(userDetails.getUsername()));
         return true;
     }
@@ -110,6 +113,7 @@ public class UserController {
     @PutMapping("/address")
     public boolean updateAddress(@RequestParam @NotBlank String address, @AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.updateAddress()");
+
         userService.updateAddress(address, Long.valueOf(userDetails.getUsername()));
         return true;
     }
