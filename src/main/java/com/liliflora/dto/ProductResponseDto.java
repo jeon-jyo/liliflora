@@ -1,7 +1,6 @@
 package com.liliflora.dto;
 
 import com.liliflora.entity.Product;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,16 +14,12 @@ public class ProductResponseDto {
 
         private long productId;
 
-        @NotBlank(message = "이름은 필수 입력 값입니다.")
         private String name;
 
-        @NotBlank(message = "가격은 필수 입력 값입니다.")
         private int price;
 
-        @NotBlank(message = "재고는 필수 입력 값입니다.")
         private int quantity;
 
-        @NotBlank(message = "카테고리는 필수 입력 값입니다.")
         private String category;
 
         private String description;

@@ -30,4 +30,11 @@ public class OrderItem {
     @Column(nullable = false)
     private int quantity;
 
+    @Column(nullable = false)
+    private boolean deleted = Boolean.FALSE;
+
+
+    public void updateDeleted() {
+        this.deleted = true;
+    }
 }

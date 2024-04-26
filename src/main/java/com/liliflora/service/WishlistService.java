@@ -7,11 +7,13 @@ import com.liliflora.entity.User;
 import com.liliflora.entity.WishItem;
 import com.liliflora.entity.Wishlist;
 import com.liliflora.repository.ProductRepository;
+import com.liliflora.repository.UserRepository;
 import com.liliflora.repository.WishItemRepository;
 import com.liliflora.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.acls.model.NotFoundException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class WishlistService {
 
+    private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final WishlistRepository wishlistRepository;
     private final WishItemRepository wishItemRepository;
@@ -32,17 +35,14 @@ public class WishlistService {
     public WishItemResponseDto.WishItemCheckDto addWishlist(WishItemRequestDto.AddWishItemDto addWishlistDto, Long userId) {
         log.info("WishlistService.addWishlist()");
 
-        User user = User.builder()
-                .userId(userId)
-                .build();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         Wishlist wishlist = wishlistRepository.findByUser(user)
-                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId)
-                );
+                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
 
         Product product = productRepository.findById(addWishlistDto.getProductId())
-                .orElseThrow(() -> new NotFoundException("Product not found " + addWishlistDto.getProductId())
-        );
+                .orElseThrow(() -> new NotFoundException("Product not found " + addWishlistDto.getProductId()));
 
         WishItem wishItem = confirmWishItem(addWishlistDto, wishlist, product);
         return WishItemResponseDto.WishItemCheckDto.fromEntity(wishItem);
@@ -72,9 +72,8 @@ public class WishlistService {
     public List<WishItemResponseDto.WishItemCheckDto> myWishlist(Long userId) {
         log.info("WishlistService.myWishlist()");
 
-        User user = User.builder()
-                .userId(userId)
-                .build();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         Wishlist wishlist = wishlistRepository.findByUser(user)
                 .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
@@ -96,7 +95,6 @@ public class WishlistService {
 
         WishItem wishItem = wishItemRepository.findById(updateWishItemDto.getWishItemId())
                 .orElseThrow(() -> new NotFoundException("WishItem not found " + userId));
-
 
         wishItem.updateQuantity(updateWishItemDto.getQuantity());
         wishItemRepository.save(wishItem);

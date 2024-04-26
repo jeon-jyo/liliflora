@@ -11,12 +11,11 @@ public class WishItemResponseDto {
     @Setter
     @Builder
     public static class WishItemCheckDto {
-
         private long wishItemId;
 
-        private Long wishlistId;
+        private long wishlistId;
 
-        private Long productId;
+        private long productId;
 
         private int quantity;
 

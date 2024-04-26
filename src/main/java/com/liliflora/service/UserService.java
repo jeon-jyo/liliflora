@@ -77,15 +77,6 @@ public class UserService {
                     .user(user)
                     .build();
             wishlistRepository.save(wishlist);
-
-            // MakeWishlistDto 를 사용하여 Wishlist 엔티티 생성 및 저장
-//            WishlistRequestDto.MakeWishlistDto makeWishlistDto = WishlistRequestDto.MakeWishlistDto.builder()
-//                    .user(user)
-//                    .build();
-//
-//            Wishlist wishlist = makeWishlistDto.toEntity(makeWishlistDto);
-//            wishlistRepository.save(wishlist);
-
             return "Success";
         } catch (DataIntegrityViolationException e) {   // 중복된 이메일 주소로 회원가입 시도한 경우 예외 처리
             return "Duplicate";

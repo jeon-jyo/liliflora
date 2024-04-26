@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -41,10 +42,17 @@ public class Order {
     @Column(name = "changed_date")
     private LocalDateTime changedDate;
 
-    @Column(nullable = false)
-    private char status;
+    @Enumerated(value = EnumType.STRING)
+    private OrderStatusEnum status;
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
-    private List<OrderItem> orderItems;
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+
+    @PrePersist
+    public void prePersist() {
+        this.purchaseDate = LocalDateTime.now();
+        this.changedDate = LocalDateTime.now();
+    }
 
 }
