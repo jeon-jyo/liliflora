@@ -1,9 +1,6 @@
 package com.liliflora.service;
 
-import com.liliflora.dto.OrderItemRequestDto;
-import com.liliflora.dto.OrderItemResponseDto;
-import com.liliflora.dto.OrderResponseDto;
-import com.liliflora.dto.UserResponseDto;
+import com.liliflora.dto.*;
 import com.liliflora.entity.*;
 import com.liliflora.repository.*;
 import com.liliflora.util.EncryptUtil;
@@ -145,7 +142,22 @@ public class OrderService {
 
     // 주문 상세 조회
     @Transactional
-    public OrderResponseDto.OrderCheckDto orderDetail(Long userId) {
-        return null;
+    public OrderResponseDto.OrderCheckDto orderDetail(OrderRequestDto.OrderDetailDto orderDetailDto, Long userId) {
+        log.info("OrderService.orderDetail()");
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        UserResponseDto.MyPageDto myPageDto = orderUserDetail(user);
+
+        Order currentOrder = orderRepository.findById(orderDetailDto.getOrderId())
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+
+        List<OrderItem> orderItems = currentOrder.getOrderItems();
+        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+                .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
+                .toList();
+
+        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
     }
 }

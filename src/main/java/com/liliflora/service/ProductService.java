@@ -25,7 +25,7 @@ public class ProductService {
     public List<ProductResponseDto.ProductDetailDto> productList() {
         return productRepository.findAllByOrderByProductIdDesc().stream()
                 .map(ProductResponseDto.ProductDetailDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 상품 상세

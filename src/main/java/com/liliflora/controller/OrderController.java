@@ -1,6 +1,7 @@
 package com.liliflora.controller;
 
 import com.liliflora.dto.OrderItemRequestDto;
+import com.liliflora.dto.OrderRequestDto;
 import com.liliflora.dto.OrderResponseDto;
 import com.liliflora.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +39,11 @@ public class OrderController {
 
     // 주문 상세 조회
     @GetMapping("/detail")
-    public OrderResponseDto.OrderCheckDto orderDetail(@AuthenticationPrincipal UserDetails userDetails) {
+    public OrderResponseDto.OrderCheckDto orderDetail(@RequestBody OrderRequestDto.OrderDetailDto orderDetailDto,
+                                                      @AuthenticationPrincipal UserDetails userDetails) {
         log.info("OrderController.orderDetail()");
 
-        return orderService.orderDetail(Long.valueOf(userDetails.getUsername()));
+        return orderService.orderDetail(orderDetailDto, Long.valueOf(userDetails.getUsername()));
     }
+    
 }
