@@ -30,11 +30,11 @@ public class OrderController {
     }
 
     // 주문 전체 조회
-    @GetMapping("/my")
-    public List<OrderResponseDto.OrderListDto> myOrderList(@AuthenticationPrincipal UserDetails userDetails) {
-        log.info("OrderController.myOrderList()");
+    @GetMapping("/list")
+    public List<OrderResponseDto.OrderListDto> orderList(@AuthenticationPrincipal UserDetails userDetails) {
+        log.info("OrderController.orderList()");
 
-        return orderService.myOrderList(Long.valueOf(userDetails.getUsername()));
+        return orderService.orderList(Long.valueOf(userDetails.getUsername()));
     }
 
     // 주문 상세 조회
@@ -45,5 +45,12 @@ public class OrderController {
 
         return orderService.orderDetail(orderDetailDto, Long.valueOf(userDetails.getUsername()));
     }
-    
+
+    // 장바구니 주문
+    @PostMapping("/wishlist")
+    public OrderResponseDto.OrderCheckDto orderWishlist(@AuthenticationPrincipal UserDetails userDetails) {
+        log.info("OrderController.orderWishlist()");
+
+        return orderService.orderWishlist(Long.valueOf(userDetails.getUsername()));
+    }
 }

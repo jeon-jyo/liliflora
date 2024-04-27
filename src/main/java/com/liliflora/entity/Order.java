@@ -56,4 +56,8 @@ public class Order {
         this.changedDate = LocalDateTime.now();
     }
 
+    public void updateAmount(int amount) {
+        this.amount = amount;
+    }
+
 }
