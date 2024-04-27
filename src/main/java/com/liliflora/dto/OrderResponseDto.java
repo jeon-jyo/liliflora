@@ -21,6 +21,8 @@ public class OrderResponseDto {
 
         private LocalDateTime purchaseDate;
 
+        private long orderStatusId;
+
         private OrderStatusEnum status;
 
         private UserResponseDto.MyPageDto user;
@@ -32,8 +34,37 @@ public class OrderResponseDto {
                     .orderId(order.getOrderId())
                     .amount(order.getAmount())
                     .purchaseDate(order.getPurchaseDate())
-                    .status(order.getStatus())
+                    .orderStatusId(order.getOrderStatus().getOrderStatusId())
+                    .status(order.getOrderStatus().getStatus())
                     .user(user)
+                    .orderItems(orderItems)
+                    .build();
+        }
+    }
+
+    @Setter
+    @Getter
+    @Builder
+    public static class OrderListDto {
+        private long orderId;
+
+        private int amount;
+
+        private LocalDateTime purchaseDate;
+
+        private long orderStatusId;
+
+        private OrderStatusEnum status;
+
+        private List<OrderItemResponseDto.OrderItemCheckDto> orderItems;
+
+        public static OrderResponseDto.OrderListDto fromEntity(Order order, List<OrderItemResponseDto.OrderItemCheckDto> orderItems) {
+            return OrderListDto.builder()
+                    .orderId(order.getOrderId())
+                    .amount(order.getAmount())
+                    .purchaseDate(order.getPurchaseDate())
+                    .orderStatusId(order.getOrderStatus().getOrderStatusId())
+                    .status(order.getOrderStatus().getStatus())
                     .orderItems(orderItems)
                     .build();
         }

@@ -7,10 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -27,5 +26,21 @@ public class OrderController {
         log.info("OrderController.orderProduct()");
 
         return orderService.orderProduct(orderProductDto, Long.valueOf(userDetails.getUsername()));
+    }
+
+    // 주문 전체 조회
+    @GetMapping("/my")
+    public List<OrderResponseDto.OrderListDto> myOrderList(@AuthenticationPrincipal UserDetails userDetails) {
+        log.info("OrderController.myOrderList()");
+
+        return orderService.myOrderList(Long.valueOf(userDetails.getUsername()));
+    }
+
+    // 주문 상세 조회
+    @GetMapping("/detail")
+    public OrderResponseDto.OrderCheckDto orderDetail(@AuthenticationPrincipal UserDetails userDetails) {
+        log.info("OrderController.orderDetail()");
+
+        return orderService.orderDetail(Long.valueOf(userDetails.getUsername()));
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -24,6 +25,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
+    private final OrderStatusRepository orderStatusRepository;
     private final OrderItemRepository orderItemRepository;
     private final WishlistRepository wishlistRepository;
     private final EncryptUtil encryptUtil;
@@ -46,10 +48,12 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        OrderStatus orderStatus = createOrderStatus();
+
         Order order = Order.builder()
                 .user(user)
                 .amount(product.getPrice() * orderQuantity)
-                .status(OrderStatusEnum.ORDERED)
+                .orderStatus(orderStatus)
                 .build();
 
         orderRepository.save(order);
@@ -73,7 +77,19 @@ public class OrderService {
         return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
     }
 
+    // 주문 상태 추가
+    @Transactional
+    private OrderStatus createOrderStatus() {
+        OrderStatus orderStatus = OrderStatus.builder()
+                .status(OrderStatusEnum.ORDERED)
+                .build();
+
+        orderStatusRepository.save(orderStatus);
+        return orderStatus;
+    }
+
     // 주문 상품 추가
+    @Transactional
     private OrderItem createOrderProduct(Order currentOrder, Product product, int orderQuantity) {
         OrderItem orderItem = OrderItem.builder()
                 .order(currentOrder)
@@ -85,7 +101,8 @@ public class OrderService {
         return orderItem;
     }
 
-    // 주문서 유저 정보
+    // 주문 유저 정보
+    @Transactional
     private UserResponseDto.MyPageDto orderUserDetail(User user) {
         String email = encryptUtil.decrypt(user.getEmail());
         String name = encryptUtil.decrypt(user.getName());
@@ -98,5 +115,37 @@ public class OrderService {
                 .phone(phone)
                 .address(address)
                 .build();
+    }
+
+    // 주문 전체 조회
+    @Transactional
+    public List<OrderResponseDto.OrderListDto> myOrderList(Long userId) {
+        log.info("OrderService.myOrderList()");
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        UserResponseDto.MyPageDto myPageDto = orderUserDetail(user);
+        List<Order> orders = orderRepository.findAllByUserOrderByPurchaseDateDesc(user);
+
+        List<OrderResponseDto.OrderListDto> orderListDtos = new ArrayList<>();
+        for (Order currentOrder : orders) {
+            List<OrderItem> orderItems = currentOrder.getOrderItems();
+            List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+                    .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
+                    .toList();
+
+            OrderResponseDto.OrderListDto orderCheckDto =
+                    OrderResponseDto.OrderListDto.fromEntity(currentOrder, orderItemCheckDtos);
+
+            orderListDtos.add(orderCheckDto);
+        }
+        return orderListDtos;
+    }
+
+    // 주문 상세 조회
+    @Transactional
+    public OrderResponseDto.OrderCheckDto orderDetail(Long userId) {
+        return null;
     }
 }

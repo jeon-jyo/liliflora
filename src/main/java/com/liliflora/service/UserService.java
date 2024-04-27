@@ -37,6 +37,7 @@ public class UserService {
     private final EncryptUtil encryptUtil;
 
     // 이메일 중복확인
+    @Transactional
     public boolean emailCheck(String email) {
         String encryptedEmail = encryptUtil.encrypt(email);
 
@@ -118,6 +119,7 @@ public class UserService {
         return jwtToken;
     }
 
+    @Transactional
     public UserResponseDto.MyPageDto myPage(Long userId) {
         log.info("UserService.myPage()");
 

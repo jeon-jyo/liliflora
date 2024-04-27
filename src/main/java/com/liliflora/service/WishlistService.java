@@ -49,6 +49,7 @@ public class WishlistService {
     }
 
     // 장바구니 상품 확인 - 추가 및 수정
+    @Transactional
     private WishItem confirmWishItem(WishItemRequestDto.AddWishItemDto addWishlistDto, Wishlist wishlist, Product product) {
         Optional<WishItem> currentWishItem =
                 wishItemRepository.findWishItemByWishlistAndProductAndDeletedFalse(wishlist, product);
@@ -69,6 +70,7 @@ public class WishlistService {
     }
 
     // 장바구니 조회
+    @Transactional
     public List<WishItemResponseDto.WishItemCheckDto> myWishlist(Long userId) {
         log.info("WishlistService.myWishlist()");
 
@@ -90,6 +92,7 @@ public class WishlistService {
     }
 
     // 장바구니 수량 변경
+    @Transactional
     public WishItemResponseDto.WishItemCheckDto updateWishlist(WishItemRequestDto.UpdateWishItemDto updateWishItemDto, Long userId) {
         log.info("WishlistService.updateWishlist()");
 
@@ -102,6 +105,7 @@ public class WishlistService {
     }
 
     // 장바구니 삭제
+    @Transactional
     public WishItemResponseDto.WishItemCheckDto deleteWishlist(WishItemRequestDto.UpdateWishItemDto updateWishItemDto, Long userId) {
         log.info("WishlistService.deleteWishlist()");
 

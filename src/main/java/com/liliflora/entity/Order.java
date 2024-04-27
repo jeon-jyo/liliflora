@@ -42,8 +42,9 @@ public class Order {
     @Column(name = "changed_date")
     private LocalDateTime changedDate;
 
-    @Enumerated(value = EnumType.STRING)
-    private OrderStatusEnum status;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_status_id", nullable = false)
+    private OrderStatus orderStatus;
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
