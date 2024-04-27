@@ -13,5 +13,9 @@ public enum OrderStatusEnum {
     RETURNED("반품완료"),
     ;
 
-    OrderStatusEnum(String status) {}
+    private final String status;
+
+    OrderStatusEnum(String status) {
+        this.status = status;
+    }
 }

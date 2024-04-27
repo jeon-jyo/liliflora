@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class OrderResponseDto {
@@ -19,23 +19,28 @@ public class OrderResponseDto {
 
         private int amount;
 
-        private LocalDateTime purchaseDate;
+        private String purchaseDate;
+
+        private String changedDate;
 
         private long orderStatusId;
 
-        private OrderStatusEnum status;
+        private String orderStatus;
 
         private UserResponseDto.MyPageDto user;
 
         private List<OrderItemResponseDto.OrderItemCheckDto> orderItems;
 
         public static OrderResponseDto.OrderCheckDto fromEntity(Order order, UserResponseDto.MyPageDto user, List<OrderItemResponseDto.OrderItemCheckDto> orderItems) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
             return OrderCheckDto.builder()
                     .orderId(order.getOrderId())
                     .amount(order.getAmount())
-                    .purchaseDate(order.getPurchaseDate())
+                    .purchaseDate(order.getPurchaseDate().format(formatter))
+                    .changedDate(order.getChangedDate().format(formatter))
                     .orderStatusId(order.getOrderStatus().getOrderStatusId())
-                    .status(order.getOrderStatus().getStatus())
+                    .orderStatus(order.getOrderStatus().getStatus().getStatus())
                     .user(user)
                     .orderItems(orderItems)
                     .build();
@@ -50,21 +55,26 @@ public class OrderResponseDto {
 
         private int amount;
 
-        private LocalDateTime purchaseDate;
+        private String purchaseDate;
+
+        private String changedDate;
 
         private long orderStatusId;
 
-        private OrderStatusEnum status;
+        private String orderStatus;
 
         private List<OrderItemResponseDto.OrderItemCheckDto> orderItems;
 
         public static OrderResponseDto.OrderListDto fromEntity(Order order, List<OrderItemResponseDto.OrderItemCheckDto> orderItems) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
             return OrderListDto.builder()
                     .orderId(order.getOrderId())
                     .amount(order.getAmount())
-                    .purchaseDate(order.getPurchaseDate())
+                    .purchaseDate(order.getPurchaseDate().format(formatter))
+                    .changedDate(order.getChangedDate().format(formatter))
                     .orderStatusId(order.getOrderStatus().getOrderStatusId())
-                    .status(order.getOrderStatus().getStatus())
+                    .orderStatus(order.getOrderStatus().getStatus().getStatus())
                     .orderItems(orderItems)
                     .build();
         }
