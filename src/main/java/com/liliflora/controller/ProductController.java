@@ -26,7 +26,7 @@ public class ProductController {
 
     // 상품 상세
     @GetMapping("/{productId}")
-    public ProductResponseDto.ProductDetailDto productDetail(@PathVariable Long productId) {
+    public ProductResponseDto.ProductDetailDto productDetail(@PathVariable("productId") Long productId) {
         log.info("ProductController.productDetail()");
 
         return productService.productDetail(productId);

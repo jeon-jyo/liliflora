@@ -106,14 +106,12 @@ public class WishlistService {
 
     // 장바구니 삭제
     @Transactional
-    public WishItemResponseDto.WishItemCheckDto deleteWishlist(WishItemRequestDto.UpdateWishItemDto updateWishItemDto, Long userId) {
+    public void deleteWishlist(WishItemRequestDto.UpdateWishItemDto updateWishItemDto, Long userId) {
         log.info("WishlistService.deleteWishlist()");
 
         WishItem wishItem = wishItemRepository.findById(updateWishItemDto.getWishItemId())
                 .orElseThrow(() -> new NotFoundException("WishItem not found " + userId));
 
         wishItem.updateDeleted();
-        wishItemRepository.save(wishItem);
-        return WishItemResponseDto.WishItemCheckDto.fromEntity(wishItem);
     }
 }

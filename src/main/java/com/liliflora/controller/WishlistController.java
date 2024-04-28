@@ -47,11 +47,11 @@ public class WishlistController {
 
     // 장바구니 삭제
     @PutMapping("/delete")
-    public WishItemResponseDto.WishItemCheckDto deleteWishlist(@RequestBody WishItemRequestDto.UpdateWishItemDto updateWishItemDto,
+    public boolean deleteWishlist(@RequestBody WishItemRequestDto.UpdateWishItemDto updateWishItemDto,
                                                                @AuthenticationPrincipal UserDetails userDetails) {
         log.info("WishlistController.deleteWishlist()");
 
-        return wishlistService.deleteWishlist(updateWishItemDto, Long.valueOf(userDetails.getUsername()));
+        return true;
     }
 
 }
