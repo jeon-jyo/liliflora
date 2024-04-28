@@ -34,8 +34,12 @@ public class Product {
     @Column
     private String description;
 
+
     public void decreaseQuantity(int quantity) {
         this.quantity -= quantity;
     }
 
+    public void increaseQuantity(int quantity) {
+        this.quantity += quantity;
+    }
 }

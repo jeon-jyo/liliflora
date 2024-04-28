@@ -53,4 +53,23 @@ public class OrderController {
 
         return orderService.orderWishlist(Long.valueOf(userDetails.getUsername()));
     }
+
+    // 주문 취소
+    @PutMapping("/cancel/{orderId}")
+    public boolean cancelOrder(@PathVariable("orderId") Long orderId) throws Exception {
+        log.info("OrderController.cancelOrder()");
+
+        orderService.cancelOrder(orderId);
+        return true;
+    }
+
+    // 상품 반품
+    @PutMapping("/return/{orderId}")
+    public boolean returnOrder(@PathVariable("orderId") Long orderId) throws Exception {
+        log.info("OrderController.returnOrder()");
+
+        orderService.returnOrder(orderId);
+        return true;
+    }
+
 }

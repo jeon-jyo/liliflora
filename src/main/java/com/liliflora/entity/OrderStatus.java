@@ -28,4 +28,24 @@ public class OrderStatus {
     @OneToMany(mappedBy = "orderStatus", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
 
+
+    public void cancelOrder() {
+        this.status = OrderStatusEnum.CANCELLED;
+    }
+
+    public void updateShipping() {
+        this.status = OrderStatusEnum.SHIPPING;
+    }
+
+    public void updateCompleted() {
+        this.status = OrderStatusEnum.COMPLETED;
+    }
+
+    public void returnOrder() {
+        this.status = OrderStatusEnum.RETURNING;
+    }
+
+    public void updateReturned() {
+        this.status = OrderStatusEnum.RETURNED;
+    }
 }

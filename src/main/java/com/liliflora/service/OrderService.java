@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -218,6 +219,86 @@ public class OrderService {
                 .toList();
 
         return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
+    }
+
+    // 주문 취소
+    @Transactional
+    public void cancelOrder(Long orderId) throws Exception {
+        log.info("OrderService.cancelOrder()");
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+
+        OrderStatus orderStatus = order.getOrderStatus();
+        if (orderStatus.getStatus() != OrderStatusEnum.ORDERED) {
+            throw new Exception("cannot cancel order");
+        }
+        orderStatus.cancelOrder();  // 주문 취소
+
+        // 상품 재고 복구
+        List<OrderItem> orderItems = order.getOrderItems();
+        for (OrderItem orderItem : orderItems) {
+            Product product = productRepository.findById(orderItem.getProduct().getProductId())
+                    .orElseThrow(() -> new NotFoundException("Product not found " + orderItem.getProduct().getProductId()));
+
+            product.increaseQuantity(orderItem.getQuantity());
+        }
+    }
+
+    // 상품 반품
+    @Transactional
+    public void returnOrder(Long orderId) throws Exception {
+        log.info("OrderService.returnOrder()");
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+
+        OrderStatus orderStatus = order.getOrderStatus();
+        if (orderStatus.getStatus() != OrderStatusEnum.COMPLETED) {
+            throw new Exception("cannot cancel order");
+        }
+
+        if (LocalDateTime.now().isAfter(order.getChangedDate().plusDays(1))) {  // 해당 주문이 변경된 후 24시간이 지났는지를 판단
+            throw new Exception("cannot return order");
+        }
+
+        orderStatus.returnOrder();  // 상품 반품
+    }
+
+    // 주문 상태 변경 - 자정마다 실행
+    @Transactional
+    public void updateOrderStatus() {
+        // ORDERED("결제완료") 이후 1일이 넘은 주문들 -> SHIPPING("배송중")
+        List<Order> orderedOrders =
+                orderRepository.findAllByOrderStatus_StatusAndChangedDateBefore(OrderStatusEnum.ORDERED, LocalDateTime.now().minusDays(1));
+
+        for (Order order : orderedOrders) {
+            order.getOrderStatus().updateShipping();
+        }
+
+        // SHIPPING("배송중") 이후 1일이 넘은 주문들 -> COMPLETED("배송완료")
+        List<Order> shippingOrders =
+                orderRepository.findAllByOrderStatus_StatusAndChangedDateBefore(OrderStatusEnum.SHIPPING, LocalDateTime.now().minusDays(1));
+
+        for (Order order : shippingOrders) {
+            order.getOrderStatus().updateCompleted();
+        }
+
+        // RETURNING("반품중") 이후 1일이 넘은 주문들 -> RETURNED("반품완료")
+        List<Order> returningOrders =
+                orderRepository.findAllByOrderStatus_StatusAndChangedDateBefore(OrderStatusEnum.RETURNING, LocalDateTime.now().minusDays(1));
+
+        // 재고 복구
+        for (Order order : returningOrders) {
+            List<OrderItem> orderItems = order.getOrderItems();
+            for (OrderItem orderItem : orderItems) {
+                Product product = productRepository.findById(orderItem.getProduct().getProductId())
+                        .orElseThrow(() -> new NotFoundException("Product not found " + orderItem.getProduct().getProductId()));
+
+                product.increaseQuantity(orderItem.getQuantity());
+            }
+            order.getOrderStatus().updateReturned();
+        }
     }
 
 }
