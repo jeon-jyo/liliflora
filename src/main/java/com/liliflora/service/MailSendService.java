@@ -1,6 +1,7 @@
 package com.liliflora.service;
 
 import com.liliflora.dto.UserRequestDto;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,13 +15,13 @@ import java.util.Random;
 // 인증 번호를 생성하고 이메일을 보내는 서비스를 수행
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class MailSendService {
-    @Autowired
-    private JavaMailSender mailSender;
+
+    private final JavaMailSender mailSender;
     private int authNumber;
 
-    @Autowired
-    private RedisService redisService;
+    private final RedisService redisService;
 
     // 임의의 6자리 양수를 반환
     public void makeRandomNumber() {

@@ -92,29 +92,29 @@ public class UserController {
 
     // 비밀번호 업데이트
     @PutMapping("/password")
-    public boolean updatePassword(@RequestBody @Valid UserRequestDto.ChangePhoneDto changePhoneDto,
+    public boolean updatePassword(@RequestBody @Valid UserRequestDto.ChangePasswordDto changePasswordDto,
                                   @AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.updatePassword()");
 
-        userService.updatePassword(changePhoneDto, Long.valueOf(userDetails.getUsername()));
+        userService.updatePassword(changePasswordDto, Long.valueOf(userDetails.getUsername()));
         return true;
     }
 
     // 폰 번호 업데이트
     @PutMapping("/phone")
-    public boolean updatePhone(@RequestParam @NotBlank String phone, @AuthenticationPrincipal UserDetails userDetails) {
+    public boolean updatePhone(@RequestBody UserRequestDto.ChangePhoneDto changePhoneDto, @AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.updatePhone()");
 
-        userService.updatePhone(phone, Long.valueOf(userDetails.getUsername()));
+        userService.updatePhone(changePhoneDto, Long.valueOf(userDetails.getUsername()));
         return true;
     }
 
     // 주소 업데이트
     @PutMapping("/address")
-    public boolean updateAddress(@RequestParam @NotBlank String address, @AuthenticationPrincipal UserDetails userDetails) {
+    public boolean updateAddress(@RequestBody UserRequestDto.ChangeAddressDto changeAddressDto, @AuthenticationPrincipal UserDetails userDetails) {
         log.info("UserController.updateAddress()");
 
-        userService.updateAddress(address, Long.valueOf(userDetails.getUsername()));
+        userService.updateAddress(changeAddressDto, Long.valueOf(userDetails.getUsername()));
         return true;
     }
 

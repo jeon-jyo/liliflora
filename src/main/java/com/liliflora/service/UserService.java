@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Optional;
 
@@ -141,7 +142,7 @@ public class UserService {
 
     // 비밀번호 업데이트
     @Transactional
-    public void updatePassword(UserRequestDto.ChangePhoneDto changePhoneDto, Long userId) {
+    public void updatePassword(UserRequestDto.ChangePasswordDto changePasswordDto, Long userId) {
         log.info("UserService.updatePassword()");
 
         User user = userRepository.findById(userId)
@@ -151,33 +152,33 @@ public class UserService {
         // String hashedPassword = passwordEncoder.encode(changePhoneDto.getPassword());
 
         // 제공된 비밀번호와 데이터베이스에 저장된 해시된 비밀번호를 비교
-        if (!passwordEncoder.matches(changePhoneDto.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(changePasswordDto.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid password");
         }
 
-        String encryptedNewPwd = passwordEncoder.encode(changePhoneDto.getNewPassword());
+        String encryptedNewPwd = passwordEncoder.encode(changePasswordDto.getNewPassword());
         user.updatePassword(encryptedNewPwd);
         userRepository.save(user);
     }
 
     // 폰 번호 업데이트
     @Transactional
-    public void updatePhone(String phone, Long userId) {
+    public void updatePhone(UserRequestDto.ChangePhoneDto changePhoneDto, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        String encryptedPhone = encryptUtil.encrypt(phone);
+        String encryptedPhone = encryptUtil.encrypt(changePhoneDto.getPhone());
         user.updatePhone(encryptedPhone);
         userRepository.save(user);
     }
 
     // 주소 업데이트
     @Transactional
-    public void updateAddress(String address, Long userId) {
+    public void updateAddress(UserRequestDto.ChangeAddressDto changeAddressDto, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        String encryptedAddress = encryptUtil.encrypt(address);
+        String encryptedAddress = encryptUtil.encrypt(changeAddressDto.getAddress());
         user.updateAddress(encryptedAddress);
         userRepository.save(user);
     }
