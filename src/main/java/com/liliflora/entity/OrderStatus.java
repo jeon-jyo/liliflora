@@ -48,4 +48,12 @@ public class OrderStatus {
     public void updateReturned() {
         this.status = OrderStatusEnum.RETURNED;
     }
+
+    public void updateFailed() {
+        this.status = OrderStatusEnum.FAILED;
+    }
+
+    public void updatePayment() {
+        this.status = OrderStatusEnum.PAYMENT;
+    }
 }

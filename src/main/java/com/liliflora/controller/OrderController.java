@@ -20,13 +20,22 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // 상품 주문
+    // 상품 주문 진입
     @PostMapping("/product")
-    public OrderResponseDto.OrderCheckDto orderProduct(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
-                                                         @AuthenticationPrincipal UserDetails userDetails) {
+    public String orderProduct(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
+                               @AuthenticationPrincipal UserDetails userDetails) throws Exception {
         log.info("OrderController.orderProduct()");
 
         return orderService.orderProduct(orderProductDto, Long.valueOf(userDetails.getUsername()));
+    }
+
+    // 결제
+    @PostMapping("/payment/{uuid}")
+    public OrderResponseDto.OrderCheckDto orderPayment(@PathVariable String uuid,
+                                                       @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("OrderController.orderPayment()");
+
+        return orderService.orderPayment(uuid, Long.valueOf(userDetails.getUsername()));
     }
 
     // 주문 전체 조회

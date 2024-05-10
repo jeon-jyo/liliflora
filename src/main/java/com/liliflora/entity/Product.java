@@ -34,6 +34,10 @@ public class Product {
     @Column
     private String description;
 
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "product_status_id", nullable = false)
+//    private ProductStatus status;
+
 
     public void decreaseQuantity(int quantity) {
         this.quantity -= quantity;
@@ -41,5 +45,9 @@ public class Product {
 
     public void increaseQuantity(int quantity) {
         this.quantity += quantity;
+    }
+
+    public void syncQuantity(int quantity) {
+        this.quantity = quantity;
     }
 }

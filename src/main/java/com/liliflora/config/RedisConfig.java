@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -32,5 +33,11 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory());   // Redis 를 사용한다고 명시
 
         return redisTemplate;
+    }
+
+    // ListOperations 빈을 생성하여 Redis 의 리스트를 다루는 데 사용
+    @Bean
+    public ListOperations<String, String> listOperations(RedisTemplate<String, String> redisTemplate) {
+        return redisTemplate.opsForList();
     }
 }

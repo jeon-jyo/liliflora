@@ -50,7 +50,7 @@ public class WishlistService {
 
     // 장바구니 상품 확인 - 추가 및 수정
     @Transactional
-    private WishItem confirmWishItem(WishItemRequestDto.AddWishItemDto addWishlistDto, Wishlist wishlist, Product product) {
+    protected WishItem confirmWishItem(WishItemRequestDto.AddWishItemDto addWishlistDto, Wishlist wishlist, Product product) {
         Optional<WishItem> currentWishItem =
                 wishItemRepository.findWishItemByWishlistAndProductAndDeletedFalse(wishlist, product);
 
