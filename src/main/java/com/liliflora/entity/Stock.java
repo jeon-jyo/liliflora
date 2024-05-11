@@ -17,6 +17,7 @@ public class Stock {
 
     private int quantity;
 
+
     public void decreaseQuantity(int quantity) throws Exception {
         this.quantity -= quantity;
 

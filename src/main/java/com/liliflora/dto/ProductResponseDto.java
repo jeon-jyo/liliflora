@@ -34,6 +34,17 @@ public class ProductResponseDto {
                     .description(product.getDescription())
                     .build();
         }
+
+        public static ProductDetailDto fromEntityAndQuantity(Product product, int quantity) {
+            return ProductDetailDto.builder()
+                    .productId(product.getProductId())
+                    .name(product.getName())
+                    .price(product.getPrice())
+                    .quantity(quantity)
+                    .category(product.getCategory())
+                    .description(product.getDescription())
+                    .build();
+        }
     }
 
     @Builder

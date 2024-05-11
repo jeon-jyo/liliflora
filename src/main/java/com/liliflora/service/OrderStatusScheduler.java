@@ -15,4 +15,10 @@ public class OrderStatusScheduler {
     public void updateOrderStatus() {
         orderService.updateOrderStatus();
     }
+
+    // 1분마다 타임아웃 검사 - 10분
+    @Scheduled(fixedRate = 60 * 1000)
+    public void checkFailedOrder() {
+        orderService.checkFailedOrder();
+    }
 }

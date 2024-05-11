@@ -7,14 +7,12 @@ import com.liliflora.util.EncryptUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ListOperations;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
@@ -37,37 +35,57 @@ public class OrderService {
 
     // 상품 주문 진입
     @Transactional
-    public String orderProduct(OrderItemRequestDto.OrderProductDto orderProductDto, Long userId) throws Exception {
+    public long orderProduct(OrderItemRequestDto.OrderProductDto orderProductDto, Long userId) throws Exception {
         log.info("OrderService.orderProduct()");
 
-        // orderPaying 및 queue 저장
-        String uuid = UUID.randomUUID().toString();
-        OrderPaying orderPaying = new OrderPaying(uuid, orderProductDto.getProductId(), orderProductDto.getQuantity());
-        orderPayingRepository.save(orderPaying);
-        queue.add(uuid);
-//        listOps.rightPush("orderQueue", uuid);
+        long orderProductId = orderProductDto.getProductId();
+        int orderQuantity = orderProductDto.getQuantity();
 
-        Stock stock = stockRepository.findById(orderProductDto.getProductId())
+        Product product = productRepository.findById(orderProductId)
+                .orElseThrow(() -> new NotFoundException("Product not found " + orderProductId));
+
+        // redis 재고 확인
+        Stock stock = stockRepository.findById(orderProductId)
                 .orElseGet(() -> {
                     // 없으면 새로운 Stock 객체 생성
-                    Product product = productRepository.findById(orderProductDto.getProductId())
-                        .orElseThrow(() -> new NotFoundException("Product not found " + orderProductDto.getProductId()));
-
-                    Stock newStock = new Stock(orderProductDto.getProductId(), product.getQuantity());
+                    Stock newStock = new Stock(orderProductId, product.getQuantity());
                     return stockRepository.save(newStock); // 새로운 재고 redis 저장하고 반환
                 });
-        stock.decreaseQuantity(orderProductDto.getQuantity());
+
+        if (stock.getQuantity() < orderQuantity) {
+            throw new IllegalArgumentException("재고가 부족합니다.");
+        }
+
+        stock.decreaseQuantity(orderQuantity);  // redis 재고 감소
         stockRepository.save(stock);
+
+        // 주문
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        OrderStatus orderStatus = createOrderStatus();
+
+        Order order = Order.builder()
+                .user(user)
+                .amount(product.getPrice() * orderQuantity)
+                .orderStatus(orderStatus)
+                .build();
+
+        orderRepository.save(order);
+
+        // 주문 상품
+        createOrderProduct(order, product, orderQuantity);
 
         // 20% 고객 이탈
         if (isTwentyPercent()) {
-            cancleOrderPaying(uuid, userId);
+            leaveOrder(order.getOrderId());
         }
 
-        return uuid;
+        return order.getOrderId();
     }
 
     // 20% 계산
+    @Transactional
     public boolean isTwentyPercent() {
         Random random = new Random();
 
@@ -80,164 +98,119 @@ public class OrderService {
 
     // 이탈
     @Transactional
-    public void cancleOrderPaying(String uuid, Long userId) {
-        if (checkQueue()) return;
+    public void leaveOrder(Long userId) {
+        Order order = orderRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+
+        stockRestore(order);
     }
 
-    // 1초마다 타임아웃 검사
-    @Scheduled(fixedRate = 1000)
-    public void handleFailedPayment() {
-        if(queue.isEmpty())
-            return;
+    // 타임아웃 확인
+    @Transactional
+    public void checkFailedOrder() {
+        // ORDERED("주문생성") 이후 10분이 넘은 주문들 -> FAILED("주문실패")
+        List<Order> orderedOrders =
+                orderRepository.findAllByOrderStatus_StatusAndChangedDateBefore(OrderStatusEnum.ORDERED, LocalDateTime.now().minusMinutes(10));
 
-        while (!queue.isEmpty()) {
-            // Queue 가 비어 있지 않은 동안에만 루프를 실행
-            if (checkQueue()) return;
+        for (Order order : orderedOrders) {
+            stockRestore(order);
         }
     }
 
-//    public boolean isEmpty(String queueName) {
-//        Long size = listOps.size(queueName);
-//        return size != null && size == 0;
-//    }
+    // redis 재고 복구
+    @Transactional
+    public void stockRestore(Order order) {
+        order.getOrderStatus().updateFailed();
 
-    // queue 및 orderPaying 삭제
-    private boolean checkQueue() {
-        try {
-            OrderPaying orderPaying = orderPayingRepository.findById(queue.peek())
-                    .orElseThrow(() -> new UsernameNotFoundException("OrderPaying not found"));
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(order);
+        for (OrderItem orderItem : orderItems) {
+            long productId = orderItem.getProduct().getProductId();
+            int quantity = orderItem.getQuantity();
 
-            // 문자열을 파싱할 형식 지정
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            Stock stock = stockRepository.findById(productId)
+                    .orElseThrow(() -> new NotFoundException("Stock not found"));
+            System.out.println("삭제 전 : " + stock.getQuantity());
 
-            // 문자열을 LocalDateTime 객체로 변환
-            LocalDateTime regDate = LocalDateTime.parse(orderPaying.getRegDate(), formatter);
-//            System.out.println(orderPaying);
-
-            if (LocalDateTime.now().minusSeconds(10).isAfter(regDate)) {
-                queue.poll();
-                orderPayingRepository.delete(orderPaying);
-//                System.out.println("삭제");
-
-                Stock stock = stockRepository.findById(orderPaying.getProductId())
-                        .orElseThrow(() -> new NotFoundException("Product not found " + orderPaying.getProductId()));
-//                System.out.println("삭제 전 : " + stock.getQuantity());
-                
-                stock.increaseQuantity(orderPaying.getQuantity());
-                stockRepository.save(stock);
-//                System.out.println("삭제 후 : " + stock.getQuantity());
-            } else {
-                // 시간이 안 지나 있으면 return
-                return true;
-            }
-        } catch (Exception e) {
-            // 결제 되어서 OrderPaying 이 없으면 queue 만 삭제
-            queue.poll();
+            stock.increaseQuantity(quantity);
+            stockRepository.save(stock);
+            System.out.println("삭제 후 : " + stock.getQuantity());
         }
-        return false;
     }
 
     // 결제
     @Transactional
-    public OrderResponseDto.OrderCheckDto orderPayment(String uuid, Long userId) {
+    public OrderResponseDto.OrderCheckDto orderPayment(Long orderId, Long userId) {
         log.info("OrderService.orderPayment()");
 
         // 20% 고객 이탈
         if (isTwentyPercent()) {
-            cancleOrderPaying(uuid, userId);
+            leaveOrder(orderId);
         }
 
-        try {
-            OrderPaying orderPaying = orderPayingRepository.findById(uuid)
-                    .orElseThrow(() -> new UsernameNotFoundException("OrderPaying not found"));
-
-            Product product = productRepository.findById(orderPaying.getProductId())
-                    .orElseThrow(() -> new NotFoundException("Product not found " + orderPaying.getProductId()));
-
-            // 주문
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-            OrderStatus orderStatus = createOrderStatus();
-
-            Order order = Order.builder()
-                    .user(user)
-                    .amount(product.getPrice() * orderPaying.getQuantity())
-                    .orderStatus(orderStatus)
-                    .build();
-
-            orderRepository.save(order);
-
-            // 주문 상품
-            Order currentOrder = orderRepository.findFirstByUserOrderByPurchaseDateDesc(user)
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
 
-            product.decreaseQuantity(orderPaying.getQuantity());    // 상품 재고 변경
-            createOrderProduct(currentOrder, product, orderPaying.getQuantity());
+        order.getOrderStatus().updatePayment();
 
-            orderPayingRepository.delete(orderPaying);  // orderPaying 삭제
-            
-            // 주문서
-            UserResponseDto.MyPageDto myPageDto = orderUserDetail(user);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            List<OrderItem> orderItems = orderItemRepository.findAllByOrder(currentOrder);
-            List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
-                    .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
-                    .toList();
+        // 주문서
+        UserResponseDto.MyPageDto myPageDto = orderUserDetail(user);
 
-            return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(order);
+        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+                .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
+                .toList();
 
-        } catch (Exception e) {
-            log.info("orderPayment not found");
-            return null;
-        }
+        return OrderResponseDto.OrderCheckDto.fromEntity(order, myPageDto, orderItemCheckDtos);
     }
-    
-//    // 상품 주문
-//    @Transactional
-//    public OrderResponseDto.OrderCheckDto orderProduct(OrderItemRequestDto.OrderProductDto orderProductDto, Long userId) {
-//        log.info("OrderService.orderProduct()");
-//
-//        // 재고 확인
-//        Product product = productRepository.findById(orderProductDto.getProductId())
-//                .orElseThrow(() -> new NotFoundException("Product not found " + orderProductDto.getProductId()));
-//
-//        int orderQuantity = orderProductDto.getQuantity();
-//        if (product.getQuantity() < orderQuantity) {
-//            throw new IllegalArgumentException("재고가 부족합니다.");
-//        }
-//
-//        // 주문
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//        OrderStatus orderStatus = createOrderStatus();
-//
-//        Order order = Order.builder()
-//                .user(user)
-//                .amount(product.getPrice() * orderQuantity)
-//                .orderStatus(orderStatus)
-//                .build();
-//
-//        orderRepository.save(order);
-//
-//        // 주문 상품
-//        Order currentOrder = orderRepository.findFirstByUserOrderByPurchaseDateDesc(user)
-//                .orElseThrow(() -> new NotFoundException("Order not found"));
-//
-//        product.decreaseQuantity(orderQuantity);    // 상품 재고 변경
-//        createOrderProduct(currentOrder, product, orderQuantity);
-//
-//        // 주문서
-//        UserResponseDto.MyPageDto myPageDto = orderUserDetail(user);
-//
-//        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(currentOrder);
-//        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
-//                .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
-//                .toList();
-//
-//        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
-//    }
+
+    // 일반 상품 주문
+    @Transactional
+    public OrderResponseDto.OrderCheckDto orderProductOrigin(OrderItemRequestDto.OrderProductDto orderProductDto, Long userId) {
+        log.info("OrderService.orderProductOrigin()");
+
+        // 재고 확인
+        Product product = productRepository.findById(orderProductDto.getProductId())
+                .orElseThrow(() -> new NotFoundException("Product not found " + orderProductDto.getProductId()));
+
+        int orderQuantity = orderProductDto.getQuantity();
+        if (product.getQuantity() < orderQuantity) {
+            throw new IllegalArgumentException("재고가 부족합니다.");
+        }
+
+        // 주문
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        OrderStatus orderStatus = createOrderStatus();
+
+        Order order = Order.builder()
+                .user(user)
+                .amount(product.getPrice() * orderQuantity)
+                .orderStatus(orderStatus)
+                .build();
+
+        orderRepository.save(order);
+
+        // 주문 상품
+        Order currentOrder = orderRepository.findFirstByUserOrderByPurchaseDateDesc(user)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+
+        product.decreaseQuantity(orderQuantity);    // 상품 재고 변경
+        createOrderProduct(currentOrder, product, orderQuantity);
+
+        // 주문서
+        UserResponseDto.MyPageDto myPageDto = orderUserDetail(user);
+
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(currentOrder);
+        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+                .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
+                .toList();
+
+        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
+    }
 
     // 주문 상태 추가
     @Transactional
@@ -246,14 +219,6 @@ public class OrderService {
                 .status(OrderStatusEnum.ORDERED)
                 .build();
 
-        orderStatusRepository.save(orderStatus);
-        return orderStatus;
-    }
-
-    // 주문 상태 변경
-    @Transactional
-    protected OrderStatus updaateOrderStatus(OrderStatus orderStatus) {
-        orderStatus.updatePayment();
         orderStatusRepository.save(orderStatus);
         return orderStatus;
     }

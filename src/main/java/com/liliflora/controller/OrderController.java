@@ -22,7 +22,7 @@ public class OrderController {
 
     // 상품 주문 진입
     @PostMapping("/product")
-    public String orderProduct(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
+    public long orderProduct(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
                                @AuthenticationPrincipal UserDetails userDetails) throws Exception {
         log.info("OrderController.orderProduct()");
 
@@ -30,12 +30,12 @@ public class OrderController {
     }
 
     // 결제
-    @PostMapping("/payment/{uuid}")
-    public OrderResponseDto.OrderCheckDto orderPayment(@PathVariable String uuid,
+    @PostMapping("/payment/{orderId}")
+    public OrderResponseDto.OrderCheckDto orderPayment(@PathVariable("orderId") Long orderId,
                                                        @AuthenticationPrincipal UserDetails userDetails) {
         log.info("OrderController.orderPayment()");
 
-        return orderService.orderPayment(uuid, Long.valueOf(userDetails.getUsername()));
+        return orderService.orderPayment(orderId, Long.valueOf(userDetails.getUsername()));
     }
 
     // 주문 전체 조회
