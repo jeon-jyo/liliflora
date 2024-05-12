@@ -23,7 +23,7 @@ public class OrderController {
     // 상품 주문 진입
     @PostMapping("/product")
     public long orderProduct(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
-                               @AuthenticationPrincipal UserDetails userDetails) throws Exception {
+                             @AuthenticationPrincipal UserDetails userDetails) throws Exception {
         log.info("OrderController.orderProduct()");
 
         return orderService.orderProduct(orderProductDto, Long.valueOf(userDetails.getUsername()));
@@ -36,6 +36,15 @@ public class OrderController {
         log.info("OrderController.orderPayment()");
 
         return orderService.orderPayment(orderId, Long.valueOf(userDetails.getUsername()));
+    }
+
+    // 일반 상품 주문
+    @PostMapping("/productOrigin")
+    public OrderResponseDto.OrderCheckDto orderProductOrigin(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
+                                                             @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("OrderController.orderProductOrigin()");
+
+        return orderService.orderProductOrigin(orderProductDto, Long.valueOf(userDetails.getUsername()));
     }
 
     // 주문 전체 조회
